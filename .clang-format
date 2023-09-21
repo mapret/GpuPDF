@@ -1,0 +1,7 @@
+BasedOnStyle: Mozilla
+
+AlwaysBreakAfterReturnType: None
+AlwaysBreakAfterDefinitionReturnType: None
+BreakBeforeBraces: Allman
+ColumnLimit: 120
+LambdaBodyIndentation: OuterScope
