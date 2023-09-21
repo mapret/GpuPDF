@@ -135,21 +135,23 @@ void GLRenderer::Draw()
     glViewport(0, 0, m_windowSize.x, m_windowSize.y);
 
     m_drawAreaChanged = false;
-    Vector4 scaling{ 1.f, 1.f, 0.f, 0.f };
+    Vector4 scaling{ 1.f, 1.f, -1.f, -1.f };
 
     float drawAreaAspectRatio{ m_drawArea.AspectRatio() };
     float windowAspectRatio{ static_cast<float>(m_windowSize.x) / m_windowSize.y };
     if (windowAspectRatio > drawAreaAspectRatio) // height-restricted
     {
-      float heightScale{ 1.f / m_drawArea.Height() };
+      float heightScale{ 1.f / m_drawArea.Height() * 2 };
       scaling.x = heightScale / windowAspectRatio;
       scaling.y = heightScale;
+      scaling.z = -drawAreaAspectRatio / windowAspectRatio;
     }
     else // width-restricted
     {
-      float widthScale{ 1.f / m_drawArea.Width() };
+      float widthScale{ 1.f / m_drawArea.Width() * 2 };
       scaling.x = widthScale;
       scaling.y = widthScale * windowAspectRatio;
+      scaling.w = -windowAspectRatio / drawAreaAspectRatio;
     }
 
     glProgramUniform4fv(m_program, glGetUniformLocation(m_program, "inputScaling"), 1, scaling.Data());
