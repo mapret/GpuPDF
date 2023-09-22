@@ -33,6 +33,8 @@ public:
   Renderer();
   ~Renderer();
   void SetTriangleBuffer(std::vector<Triangle>&& triangles);
+  void AddTriangles(const std::vector<Triangle>& triangles);
+  void Finish();
   void SetWindowSize(const Vector2i& windowSize);
   void SetDrawArea(const Rectangle& drawArea);
   void Draw();

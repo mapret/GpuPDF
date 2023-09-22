@@ -26,12 +26,13 @@ void Window::Run(const std::filesystem::path& sourceFile)
       PDFStreamReader reader{ stream };
       reader.Read();
       auto triangles{ reader.CollectTriangles() };
-      renderer.SetTriangleBuffer(std::move(triangles));
+      renderer.AddTriangles(triangles);
       renderer.SetDrawArea(reader.GetDrawArea());
       Vector2i windowSize;
       glfwGetWindowSize(window, &windowSize.x, &windowSize.y);
       renderer.SetWindowSize(windowSize);
     }
+    renderer.Finish();
   } };
 
   Vector2i oldWindowSize{ 1, 1 };

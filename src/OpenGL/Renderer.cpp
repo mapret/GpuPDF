@@ -45,6 +45,16 @@ void Renderer::SetTriangleBuffer(std::vector<Triangle>&& triangles)
   m_ready = true;
 }
 
+void Renderer::AddTriangles(const std::vector<Triangle>& triangles)
+{
+  m_triangles.insert(m_triangles.end(), triangles.begin(), triangles.end());
+}
+
+void Renderer::Finish()
+{
+  m_ready = true;
+}
+
 void Renderer::SetWindowSize(const Vector2i& windowSize)
 {
   m_windowSize = windowSize;

@@ -10,26 +10,39 @@ std::vector<PDFStreamFinder::GraphicsStream> PDFStreamFinder::GetGraphicsStreams
 
   std::vector<PDFStreamFinder::GraphicsStream> streams;
 
-  for (const auto& a : document.GetObjects())
+  for (const auto& pdfObject : document.GetObjects())
   {
-    if (a->IsDictionary() && a->GetDictionary().HasKey("MediaBox"))
+    if (pdfObject->IsDictionary() && pdfObject->GetDictionary().HasKey("MediaBox"))
     {
-      if (a->GetDictionary().GetKey("Type")->GetName() == "Page")
+      const auto& mediaBoxArray{ pdfObject->GetDictionary().MustGetKey("MediaBox").GetArray() };
+      Rectangle mediaBox;
+      mediaBox.min.x = mediaBoxArray[0].GetReal();
+      mediaBox.min.y = mediaBoxArray[1].GetReal();
+      mediaBox.max.x = mediaBoxArray[2].GetReal();
+      mediaBox.max.y = mediaBoxArray[3].GetReal();
+
+      if (pdfObject->GetDictionary().GetKey("Type")->GetName() == "Page")
       {
-        const auto& pdfStream{
-          document.GetObjects().MustGetObject(a->GetDictionary().GetKey("Contents")->GetReference()).MustGetStream()
-        };
-        PoDoFo::charbuff buffer;
-        pdfStream.CopyToSafe(buffer);
+        auto AddToStream{ [&](PoDoFo::PdfObject& streamObject)
+        {
+          const auto& pdfStream{ document.GetObjects().MustGetObject(streamObject.GetReference()).MustGetStream() };
+          PoDoFo::charbuff buffer;
+          pdfStream.CopyToSafe(buffer);
+          streams.push_back(GraphicsStream{ buffer, mediaBox });
+        } };
 
-        const auto& array{ a->GetDictionary().MustGetKey("MediaBox").GetArray() };
-        Rectangle mediaBox;
-        mediaBox.min.x = array[0].GetReal();
-        mediaBox.min.y = array[1].GetReal();
-        mediaBox.max.x = array[2].GetReal();
-        mediaBox.max.y = array[3].GetReal();
-
-        streams.push_back(GraphicsStream{ buffer, mediaBox });
+        auto contents{ pdfObject->GetDictionary().GetKey("Contents") };
+        if (contents->IsReference())
+        {
+          AddToStream(*contents);
+        }
+        else if (contents->IsArray())
+        {
+          for (auto& arrayEntry : contents->GetArray())
+          {
+            AddToStream(arrayEntry);
+          }
+        }
       }
     }
   }

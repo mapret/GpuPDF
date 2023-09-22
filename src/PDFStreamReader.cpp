@@ -6,7 +6,7 @@ namespace
 {
 bool IsNumber(std::string_view token)
 {
-  return token.find_first_not_of("0123456789.") == std::string::npos;
+  return token.find_first_not_of("0123456789.-") == std::string::npos;
 }
 }
 
@@ -23,6 +23,7 @@ void PDFStreamReader::Read()
     std::string_view token = NextToken();
     if (token.empty())
       break;
+    // std::cout << "token: " << token << "\n";
     if (IsNumber(token))
     {
       std::string copy{ token };
@@ -37,7 +38,8 @@ void PDFStreamReader::Read()
     }
     else if (token == "l")
     {
-      m_polylines.back().AddPoint(PopVector2());
+      if (!m_polylines.empty()) // TODO: Should the last point from the previous stream be used?
+        m_polylines.back().AddPoint(PopVector2());
     }
     else if (token == "j")
     {
@@ -50,7 +52,6 @@ void PDFStreamReader::Read()
     else if (token == "S")
     {
     }
-    // std::cout << "token: " << token << ", " << "\n";
   }
 }
 
