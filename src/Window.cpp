@@ -1,5 +1,5 @@
 #include "Window.hpp"
-#include "GLRenderer.hpp"
+#include "OpenGL/Renderer.hpp"
 #include "PDFStreamFinder.hpp"
 #include "PDFStreamReader.hpp"
 #include <GLFW/glfw3.h>
@@ -15,7 +15,8 @@ void Window::Run(const std::filesystem::path& sourceFile)
   GLFWwindow* window{ glfwCreateWindow(800, 600, "GpuPDF", nullptr, nullptr) };
   glfwMakeContextCurrent(window);
 
-  GLRenderer renderer;
+  auto rendererPtr{ std::make_unique<gl::Renderer>() };
+  auto& renderer{ *rendererPtr };
 
   std::thread loadThread{ [&]()
   {
@@ -49,6 +50,7 @@ void Window::Run(const std::filesystem::path& sourceFile)
     glfwPollEvents();
     glfwSwapBuffers(window);
   }
+  rendererPtr.reset(); // Do OpenGL cleanup before the window is destroyed
   glfwDestroyWindow(window);
   glfwTerminate();
 

@@ -25,6 +25,7 @@ project(gpupdf C CXX)
 file(GLOB_RECURSE gpupdf_sources "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/src/*.hpp")
 add_executable(gpupdf ${gpupdf_sources})
 
+target_include_directories(gpupdf PRIVATE ${CMAKE_SOURCE_DIR}/src)
 #target_include_directories(gpupdf PRIVATE ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
 
 find_package(podofo CONFIG REQUIRED)

@@ -1,10 +1,15 @@
 #pragma once
 
+#include "OpenGL/GlewInitializer.hpp"
+#include "OpenGL/Program.hpp"
+#include "OpenGL/VertexArray.hpp"
 #include "math/Rectangle.hpp"
 #include "math/Triangle.hpp"
 #include <vector>
 
-class GLRenderer
+namespace gl
+{
+class Renderer
 {
   bool m_ready{ false };
   bool m_initialDraw{ true };
@@ -18,16 +23,18 @@ class GLRenderer
   std::vector<Triangle> m_triangles;
 
   unsigned m_fbo{ 0 };
-  unsigned m_vao;
-  unsigned m_program;
+  GlewInitializer m_glewInitializer;
+  VertexArray m_vao;
+  Program m_program;
 
   void RecreateFramebuffer();
 
 public:
-  GLRenderer();
-  ~GLRenderer();
+  Renderer();
+  ~Renderer();
   void SetTriangleBuffer(std::vector<Triangle>&& triangles);
   void SetWindowSize(const Vector2i& windowSize);
   void SetDrawArea(const Rectangle& drawArea);
   void Draw();
 };
+}
