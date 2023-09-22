@@ -1,4 +1,5 @@
 #include "Polyline.hpp"
+#include "math/Numbers.hpp"
 
 namespace
 {
@@ -69,7 +70,7 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
       }
       else if (m_capStyle == LineCapStyle::Round)
       {
-        DrawPie(p0, halfThickness, std::atan2(left.y, left.x), 3.14f, trianglesOut);
+        DrawPie(p0, halfThickness, std::atan2(left.y, left.x), numbers::PI, trianglesOut);
       }
     }
     if (i == count - 1)
@@ -96,7 +97,7 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
     {
       if (m_joinStyle == LineJoinStyle::Round)
       {
-        float startAngleAdd{ isLeftTurn ? 3.14f : 0.f };
+        float startAngleAdd{ isLeftTurn ? numbers::PI : 0.f };
         float angleSizeMul{ isLeftTurn ? -1.f : 1.f };
         DrawPie(p0,
                 halfThickness,
@@ -139,7 +140,7 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
     {
       if (m_capStyle == LineCapStyle::Round)
       {
-        DrawPie(p1, halfThickness, std::atan2(left.y, left.x), -3.14f, trianglesOut);
+        DrawPie(p1, halfThickness, std::atan2(left.y, left.x), -numbers::PI, trianglesOut);
       }
     }
 
