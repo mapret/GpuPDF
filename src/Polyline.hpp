@@ -24,6 +24,7 @@ class Polyline
   LineJoinStyle m_joinStyle;
   LineCapStyle m_capStyle;
   Vector3 m_color;
+  float m_lineWidth;
 
   void DrawPie(const Vector2& center,
                float radius,
@@ -36,5 +37,6 @@ public:
   void SetJoinStyle(LineJoinStyle joinStyle);
   void SetCapStyle(LineCapStyle capStyle);
   void SetColor(const Vector3& color);
+  void SetLineWidth(float lineWidth);
   void GetTriangles(std::vector<Triangle>& trianglesOut) const;
 };

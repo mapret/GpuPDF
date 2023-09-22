@@ -23,6 +23,7 @@ class PDFStreamReader
   LineCapStyle m_currentLineCapStyle;
   LineJoinStyle m_currentLineJoinStyle;
   Vector3 m_currentColor;
+  float m_currentLineWidth;
 
 public:
   PDFStreamReader(const PDFStreamFinder::GraphicsStream& data);

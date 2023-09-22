@@ -21,6 +21,11 @@ void Polyline::SetColor(const Vector3& color)
   m_color = color;
 }
 
+void Polyline::SetLineWidth(float lineWidth)
+{
+  m_lineWidth = lineWidth;
+}
+
 void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
 {
   //     miterLength = 1 / sin(phi / 2)
@@ -31,7 +36,7 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
 
   Vector2 previousDirection;
   Vector2 previousLeft;
-  float halfThickness = 5;
+  float halfThickness{ m_lineWidth / 2.f };
 
   for (int i{ 0 }, count{ static_cast<int>(m_points.size()) - 1 }; i < count; i++)
   {

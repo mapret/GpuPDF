@@ -35,6 +35,7 @@ void PDFStreamReader::Read()
       m_polylines.back().SetJoinStyle(m_currentLineJoinStyle);
       m_polylines.back().SetCapStyle(m_currentLineCapStyle);
       m_polylines.back().SetColor(m_currentColor);
+      m_polylines.back().SetLineWidth(m_currentLineWidth);
       m_polylines.back().AddPoint(PopVector2());
     }
     else if (token == "l")
@@ -56,6 +57,10 @@ void PDFStreamReader::Read()
     else if (token == "RG")
     {
       m_currentColor = PopVector3();
+    }
+    else if (token == "w")
+    {
+      m_currentLineWidth = PopFloat();
     }
   }
 }
