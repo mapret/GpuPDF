@@ -1,23 +1,6 @@
 #include "Polyline.hpp"
 #include "math/Numbers.hpp"
 
-namespace
-{
-void DrawPie(const Vector2& center, float radius, float beginAngle, float angleSize, std::vector<Triangle>& out)
-{
-  int numSteps{ 10 };
-  float stepsize{ angleSize / numSteps };
-  for (int i{ 0 }; i < numSteps; i++)
-  {
-    float sliceAngleBegin{ beginAngle + stepsize * i };
-    float sliceAngleEnd{ beginAngle + stepsize * (i + 1) };
-    out.push_back(Triangle{ center,
-                            center + radius * Vector2{ std::cos(sliceAngleBegin), std::sin(sliceAngleBegin) },
-                            center + radius * Vector2{ std::cos(sliceAngleEnd), std::sin(sliceAngleEnd) } });
-  }
-}
-}
-
 void Polyline::AddPoint(const Vector2& point)
 {
   m_points.push_back(point);
@@ -31,6 +14,11 @@ void Polyline::SetJoinStyle(LineJoinStyle joinStyle)
 void Polyline::SetCapStyle(LineCapStyle capStyle)
 {
   m_capStyle = capStyle;
+}
+
+void Polyline::SetColor(const Vector3& color)
+{
+  m_color = color;
 }
 
 void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
@@ -90,8 +78,8 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
     //  | /   |
     // a|/____|b
     //    p0
-    trianglesOut.push_back(Triangle{ a, b, c });
-    trianglesOut.push_back(Triangle{ a, c, d });
+    trianglesOut.push_back(Triangle{ a, b, c, m_color });
+    trianglesOut.push_back(Triangle{ a, c, d, m_color });
 
     if (i > 0)
     {
@@ -112,7 +100,7 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
         // TODO: Dont insert in middle
         trianglesOut.insert(
           trianglesOut.end() - 2,
-          Triangle{ p0 + previousLeft * halfThickness * leftMul, p0, p0 + left * halfThickness * leftMul });
+          Triangle{ p0 + previousLeft * halfThickness * leftMul, p0, p0 + left * halfThickness * leftMul, m_color });
       }
       else if (m_joinStyle == LineJoinStyle::Miter)
       {
@@ -123,15 +111,15 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
         // There are t least 4 triangles in trianglesOut the first time this code is reached
         if (isLeftTurn)
         {
-          trianglesOut[trianglesOut.size() - 2].b -= t1;
-          trianglesOut[trianglesOut.size() - 3].b += t2;
-          trianglesOut[trianglesOut.size() - 4].c += t2;
+          trianglesOut[trianglesOut.size() - 2].b.position -= t1;
+          trianglesOut[trianglesOut.size() - 3].b.position += t2;
+          trianglesOut[trianglesOut.size() - 4].c.position += t2;
         }
         else
         {
-          trianglesOut[trianglesOut.size() - 1].a -= t1;
-          trianglesOut[trianglesOut.size() - 2].a -= t1;
-          trianglesOut[trianglesOut.size() - 3].c += t2;
+          trianglesOut[trianglesOut.size() - 1].a.position -= t1;
+          trianglesOut[trianglesOut.size() - 2].a.position -= t1;
+          trianglesOut[trianglesOut.size() - 3].c.position += t2;
         }
       }
     }
@@ -146,5 +134,24 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
 
     previousDirection = direction;
     previousLeft = left;
+  }
+}
+
+void Polyline::DrawPie(const Vector2& center,
+                       float radius,
+                       float beginAngle,
+                       float angleSize,
+                       std::vector<Triangle>& out) const
+{
+  int numSteps{ 10 };
+  float stepsize{ angleSize / numSteps };
+  for (int i{ 0 }; i < numSteps; i++)
+  {
+    float sliceAngleBegin{ beginAngle + stepsize * i };
+    float sliceAngleEnd{ beginAngle + stepsize * (i + 1) };
+    out.push_back(Triangle{ center,
+                            center + radius * Vector2{ std::cos(sliceAngleBegin), std::sin(sliceAngleBegin) },
+                            center + radius * Vector2{ std::cos(sliceAngleEnd), std::sin(sliceAngleEnd) },
+                            m_color });
   }
 }

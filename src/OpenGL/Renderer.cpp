@@ -9,16 +9,20 @@ namespace
 {
 const char* scalingVertexShader{ R"""(#version 330 core
 layout(location = 0) in vec2 position2d;
+layout(location = 1) in vec3 color;
+out vec3 colorPS;
 uniform vec4 inputScaling;
 void main() {
   gl_Position = vec4(position2d * inputScaling.xy + inputScaling.zw, 0.f, 1.f);
+  colorPS = color;
 }
 )""" };
 
 const char* passthroughFragmentShader{ R"""(#version 330 core
-layout(location = 0) out vec3 color;
+in vec3 colorPS;
+layout(location = 0) out vec3 colorOut;
 void main() {
-  color = vec3(1, 0, 0);
+  colorOut = colorPS;
 }
 )""" };
 }
@@ -82,7 +86,10 @@ void Renderer::Draw()
     buffer.Bind();
     buffer.SetData(m_triangles.size() * sizeof(m_triangles[0]), m_triangles.data());
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(
+      0, 2, GL_FLOAT, GL_FALSE, sizeof(Triangle::Vertex), (void*)offsetof(Triangle::Vertex, position));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Triangle::Vertex), (void*)offsetof(Triangle::Vertex, color));
 
     m_vao.Unbind();
 

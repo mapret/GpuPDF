@@ -34,6 +34,7 @@ void PDFStreamReader::Read()
       m_polylines.emplace_back();
       m_polylines.back().SetJoinStyle(m_currentLineJoinStyle);
       m_polylines.back().SetCapStyle(m_currentLineCapStyle);
+      m_polylines.back().SetColor(m_currentColor);
       m_polylines.back().AddPoint(PopVector2());
     }
     else if (token == "l")
@@ -51,6 +52,10 @@ void PDFStreamReader::Read()
     }
     else if (token == "S")
     {
+    }
+    else if (token == "RG")
+    {
+      m_currentColor = PopVector3();
     }
   }
 }
@@ -96,4 +101,12 @@ Vector2 PDFStreamReader::PopVector2()
   float x{ PopFloat() };
   float y{ PopFloat() };
   return Vector2{ y, x };
+}
+
+Vector3 PDFStreamReader::PopVector3()
+{
+  float x{ PopFloat() };
+  float y{ PopFloat() };
+  float z{ PopFloat() };
+  return Vector3{ z, y, x };
 }
