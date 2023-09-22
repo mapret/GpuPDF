@@ -17,8 +17,11 @@ class GLRenderer
 
   std::vector<Triangle> m_triangles;
 
+  unsigned m_fbo{ 0 };
   unsigned m_vao;
   unsigned m_program;
+
+  void RecreateFramebuffer();
 
 public:
   GLRenderer();

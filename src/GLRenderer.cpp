@@ -31,7 +31,7 @@ void main() {
 )""" };
 
   const char* FS{ R"""(#version 330 core
-out vec3 color;
+layout(location = 0) out vec3 color;
 void main() {
   color = vec3(1, 0, 0);
 }
@@ -79,6 +79,9 @@ void main() {
   glCreateVertexArrays(1, &m_vao);
 
   CheckError();
+
+  glEnable(GL_MULTISAMPLE);
+  glDisable(GL_DEPTH_TEST);
 }
 
 GLRenderer::~GLRenderer()
@@ -129,12 +132,14 @@ void GLRenderer::Draw()
     CheckError();
   }
 
+  if (m_windowSizeChanged)
+  {
+    RecreateFramebuffer();
+    glViewport(0, 0, m_windowSize.x, m_windowSize.y);
+  }
+
   if (m_windowSizeChanged || m_drawAreaChanged)
   {
-    m_windowSizeChanged = false;
-    glViewport(0, 0, m_windowSize.x, m_windowSize.y);
-
-    m_drawAreaChanged = false;
     Vector4 scaling{ 1.f, 1.f, -1.f, -1.f };
 
     float drawAreaAspectRatio{ m_drawArea.AspectRatio() };
@@ -156,6 +161,10 @@ void GLRenderer::Draw()
 
     glProgramUniform4fv(m_program, glGetUniformLocation(m_program, "inputScaling"), 1, scaling.Data());
   }
+  m_windowSizeChanged = false;
+  m_drawAreaChanged = false;
+
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glUseProgram(m_program);
@@ -163,5 +172,35 @@ void GLRenderer::Draw()
   glBindVertexArray(m_vao);
   glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(m_triangles.size() * 3));
   glBindVertexArray(0);
+
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
+  glBlitFramebuffer(
+    0, 0, m_windowSize.x, m_windowSize.y, 0, 0, m_windowSize.x, m_windowSize.y, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+  CheckError();
+}
+
+void GLRenderer::RecreateFramebuffer()
+{
+  if (m_fbo != 0)
+    glDeleteFramebuffers(1, &m_fbo);
+
+  glGenFramebuffers(1, &m_fbo);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
+
+  GLuint texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture);
+  glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGB, m_windowSize.x, m_windowSize.y, GL_TRUE);
+  glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
+  GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, drawBuffers);
+  if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    std::cerr << "Framebuffer error\n";
+
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  glDeleteTextures(1, &texture);
+
   CheckError();
 }
