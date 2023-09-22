@@ -80,8 +80,6 @@ document.GetObjects().MustGetObject(object.GetReference()));
 
 int main(int argc, char** argv)
 {
-  printf("asdf\n");
-
   if (argc >= 1)
   {
     Window window;

@@ -136,6 +136,7 @@ public:
   Matrix& operator-=(const Matrix& rhs) { for (int i{ 0 }; i < SIZE; i++) at(i) -= rhs.at(i); return *this; }
   Matrix operator+(const Matrix& rhs) const { Matrix copy{ *this }; copy += rhs; return copy; }
   Matrix operator-(const Matrix& rhs) const { Matrix copy{ *this }; copy -= rhs; return copy; }
+  Matrix operator-() const { Matrix copy{ *this }; for (int i{ 0 }; i < SIZE; i++) copy.at(i) = -copy.at(i); return copy; }
 
   Matrix& operator+=(T scalar) { for (int i{ 0 }; i < SIZE; i++) at(i) += scalar; return *this; }
   Matrix& operator-=(T scalar) { for (int i{ 0 }; i < SIZE; i++) at(i) -= scalar; return *this; }
@@ -145,6 +146,10 @@ public:
   Matrix operator-(T scalar) const { Matrix copy{ *this }; copy -= scalar; return copy; }
   Matrix operator*(T scalar) const { Matrix copy{ *this }; copy *= scalar; return copy; }
   Matrix operator/(T scalar) const { Matrix copy{ *this }; copy /= scalar; return copy; }
+  friend Matrix operator+(T scalar, const Matrix& rhs) { return rhs + scalar; };
+  friend Matrix operator-(T scalar, const Matrix& rhs) { return -rhs + scalar; };
+  friend Matrix operator*(T scalar, const Matrix& rhs) { return rhs * scalar; };
+  friend Matrix operator/(T scalar, const Matrix& rhs) { Matrix copy; for (int i{ 0 }; i < SIZE; i++) copy.at(i) = scalar / rhs.at(i); return copy; };
   // clang-format on
 
   template<typename = std::enable_if_t<COLS == 1>>

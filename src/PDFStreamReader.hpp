@@ -15,9 +15,12 @@ class PDFStreamReader
 
   std::string_view NextToken();
   float PopFloat();
+  int PopInt();
   Vector2 PopVector2();
 
   std::vector<Polyline> m_polylines;
+  LineCapStyle m_currentLineCapStyle;
+  LineJoinStyle m_currentLineJoinStyle;
 
 public:
   PDFStreamReader(const PDFStreamFinder::GraphicsStream& data);

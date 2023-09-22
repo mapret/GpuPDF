@@ -31,11 +31,21 @@ void PDFStreamReader::Read()
     if (token == "m")
     {
       m_polylines.emplace_back();
+      m_polylines.back().SetJoinStyle(m_currentLineJoinStyle);
+      m_polylines.back().SetCapStyle(m_currentLineCapStyle);
       m_polylines.back().AddPoint(PopVector2());
     }
     else if (token == "l")
     {
       m_polylines.back().AddPoint(PopVector2());
+    }
+    else if (token == "j")
+    {
+      m_currentLineJoinStyle = static_cast<LineJoinStyle>(PopInt());
+    }
+    else if (token == "J")
+    {
+      m_currentLineCapStyle = static_cast<LineCapStyle>(PopInt());
     }
     else if (token == "S")
     {
@@ -49,7 +59,6 @@ std::vector<Triangle> PDFStreamReader::CollectTriangles() const
   std::vector<Triangle> triangles;
   for (const Polyline& polyline : m_polylines)
     polyline.GetTriangles(triangles);
-  // triangles.emplace_back(Triangle{ Vector2{ 0.f, 0.f }, Vector2{ 1.f, 0.f }, Vector2{ 0.f, 1.f } });
   return triangles;
 }
 
@@ -74,6 +83,11 @@ float PDFStreamReader::PopFloat()
   float ret{ m_stack.top() };
   m_stack.pop();
   return ret;
+}
+
+int PDFStreamReader::PopInt()
+{
+  return static_cast<int>(PopFloat());
 }
 
 Vector2 PDFStreamReader::PopVector2()

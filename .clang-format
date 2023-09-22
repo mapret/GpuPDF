@@ -4,4 +4,5 @@ AlwaysBreakAfterReturnType: None
 AlwaysBreakAfterDefinitionReturnType: None
 BreakBeforeBraces: Allman
 ColumnLimit: 120
+InsertNewlineAtEOF: true
 LambdaBodyIndentation: OuterScope
