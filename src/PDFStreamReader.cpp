@@ -14,6 +14,7 @@ PDFStreamReader::PDFStreamReader(const PDFStreamFinder::GraphicsStream& data)
   : m_data(data.m_data)
   , m_drawArea(data.m_drawArea)
 {
+  m_graphicStates.emplace(); // Need to start with one graphics state on the stack
 }
 
 void PDFStreamReader::Read()
@@ -29,48 +30,62 @@ void PDFStreamReader::Read()
       std::string copy{ token };
       m_stack.push(std::stof(copy));
     }
-    if (token == "m")
+    if (token == "q")
+    {
+      if (m_graphicStates.empty())
+      {
+        m_graphicStates.emplace();
+      }
+      else
+      {
+        GraphicsState copy{ m_graphicStates.top() };
+        m_graphicStates.push(copy);
+      }
+    }
+    else if (token == "Q")
+    {
+      m_graphicStates.pop();
+      if (m_graphicStates.empty()) // TODO: Not sure why this happens
+        m_graphicStates.emplace();
+    }
+    else if (token == "m")
     {
       m_polylines.emplace_back();
-      m_polylines.back().SetJoinStyle(m_currentLineJoinStyle);
-      m_polylines.back().SetCapStyle(m_currentLineCapStyle);
-      m_polylines.back().SetColor(m_currentColor);
-      m_polylines.back().SetLineWidth(m_currentLineWidth);
-      m_polylines.back().SetCTM(m_currentCTM);
-      m_polylines.back().AddPoint(PopVector2());
+      m_polylines.back().second = GetGraphicsState();
+      m_polylines.back().first.AddPoint(PopVector2());
     }
     else if (token == "l")
     {
       if (!m_polylines.empty()) // TODO: Should the last point from the previous stream be used?
-        m_polylines.back().AddPoint(PopVector2());
+        m_polylines.back().first.AddPoint(PopVector2());
     }
     else if (token == "j")
     {
-      m_currentLineJoinStyle = static_cast<LineJoinStyle>(PopInt());
+      GetGraphicsState().SetLineJoinStyle(static_cast<LineJoinStyle>(PopInt()));
     }
     else if (token == "J")
     {
-      m_currentLineCapStyle = static_cast<LineCapStyle>(PopInt());
+      GetGraphicsState().SetLineCapStyle(static_cast<LineCapStyle>(PopInt()));
     }
     else if (token == "S")
     {
     }
     else if (token == "RG")
     {
-      m_currentColor = PopVector3();
+      GetGraphicsState().SetStrokeColor(PopVector3());
     }
     else if (token == "K")
     {
-      m_currentColor = CMYKtoRGB(PopVector4());
+      GetGraphicsState().SetStrokeColor(CMYKtoRGB(PopVector4()));
     }
     else if (token == "w")
     {
-      m_currentLineWidth = PopFloat();
+      GetGraphicsState().SetLineWidth(PopFloat());
     }
     else if (token == "cm")
     {
       // TODO: Append to existing matrix?
-      m_currentCTM = PopCTM();
+      GetGraphicsState().SetTransform(PopCTM());
     }
   }
 }
@@ -78,8 +93,8 @@ void PDFStreamReader::Read()
 std::vector<Triangle> PDFStreamReader::CollectTriangles() const
 {
   std::vector<Triangle> triangles;
-  for (const Polyline& polyline : m_polylines)
-    polyline.GetTriangles(triangles);
+  for (const auto& [polyline, graphicsState] : m_polylines)
+    polyline.GetTriangles(graphicsState, triangles);
   return triangles;
 }
 
@@ -97,6 +112,11 @@ std::string_view PDFStreamReader::NextToken()
     return {};
   m_readPosition++;
   return std::string_view(m_data.data() + startRead, m_readPosition - startRead - 1);
+}
+
+GraphicsState& PDFStreamReader::GetGraphicsState()
+{
+  return m_graphicStates.top();
 }
 
 float PDFStreamReader::PopFloat()

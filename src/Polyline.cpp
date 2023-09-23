@@ -6,32 +6,7 @@ void Polyline::AddPoint(const Vector2& point)
   m_points.push_back(point);
 }
 
-void Polyline::SetJoinStyle(LineJoinStyle joinStyle)
-{
-  m_joinStyle = joinStyle;
-}
-
-void Polyline::SetCapStyle(LineCapStyle capStyle)
-{
-  m_capStyle = capStyle;
-}
-
-void Polyline::SetColor(const Vector3& color)
-{
-  m_color = color;
-}
-
-void Polyline::SetLineWidth(float lineWidth)
-{
-  m_lineWidth = lineWidth;
-}
-
-void Polyline::SetCTM(const CTM& ctm)
-{
-  m_ctm = ctm;
-}
-
-void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
+void Polyline::GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const
 {
   //     miterLength = 1 / sin(phi / 2)
   // <=>         phi = asin(1 / miterLength) * 2
@@ -41,7 +16,7 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
 
   Vector2 previousDirection;
   Vector2 previousLeft;
-  float halfThickness{ m_lineWidth / 2.f };
+  float halfThickness{ graphicsState.GetLineWidth() / 2.f };
 
   size_t startOffset{ trianglesOut.size() };
 
@@ -63,19 +38,20 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
 
     if (i == 0)
     {
-      if (m_capStyle == LineCapStyle::Square)
+      if (graphicsState.GetLineCapStyle() == LineCapStyle::Square)
       {
         a -= direction * halfThickness;
         b -= direction * halfThickness;
       }
-      else if (m_capStyle == LineCapStyle::Round)
+      else if (graphicsState.GetLineCapStyle() == LineCapStyle::Round)
       {
-        DrawPie(p0, halfThickness, std::atan2(left.y, left.x), numbers::PI, trianglesOut);
+        DrawPie(
+          p0, halfThickness, std::atan2(left.y, left.x), numbers::PI, graphicsState.GetStrokeColor(), trianglesOut);
       }
     }
     if (i == count - 1)
     {
-      if (m_capStyle == LineCapStyle::Square)
+      if (graphicsState.GetLineCapStyle() == LineCapStyle::Square)
       {
         c += direction * halfThickness;
         d += direction * halfThickness;
@@ -90,12 +66,12 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
     //  | /   |
     // a|/____|b
     //    p0
-    trianglesOut.push_back(Triangle{ a, b, c, m_color });
-    trianglesOut.push_back(Triangle{ a, c, d, m_color });
+    trianglesOut.push_back(Triangle{ a, b, c, graphicsState.GetStrokeColor() });
+    trianglesOut.push_back(Triangle{ a, c, d, graphicsState.GetStrokeColor() });
 
     if (i > 0)
     {
-      if (m_joinStyle == LineJoinStyle::Round)
+      if (graphicsState.GetLineJoinStyle() == LineJoinStyle::Round)
       {
         float startAngleAdd{ isLeftTurn ? numbers::PI : 0.f };
         float angleSizeMul{ isLeftTurn ? -1.f : 1.f };
@@ -103,18 +79,22 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
                 halfThickness,
                 std::atan2(left.y, left.x) + startAngleAdd,
                 std::acos(previousDirection.Dot(direction)) * angleSizeMul,
+                graphicsState.GetStrokeColor(),
                 trianglesOut);
       }
-      else if (m_joinStyle == LineJoinStyle::Bevel ||
-               (m_joinStyle == LineJoinStyle::Miter && previousDirection.Dot(direction) + 1 < cosMinMiterAngle))
+      else if (graphicsState.GetLineJoinStyle() == LineJoinStyle::Bevel ||
+               (graphicsState.GetLineJoinStyle() == LineJoinStyle::Miter &&
+                previousDirection.Dot(direction) + 1 < cosMinMiterAngle))
       {
         float leftMul{ isLeftTurn ? -1.f : 1.f };
         // TODO: Dont insert in middle
-        trianglesOut.insert(
-          trianglesOut.end() - 2,
-          Triangle{ p0 + previousLeft * halfThickness * leftMul, p0, p0 + left * halfThickness * leftMul, m_color });
+        trianglesOut.insert(trianglesOut.end() - 2,
+                            Triangle{ p0 + previousLeft * halfThickness * leftMul,
+                                      p0,
+                                      p0 + left * halfThickness * leftMul,
+                                      graphicsState.GetStrokeColor() });
       }
-      else if (m_joinStyle == LineJoinStyle::Miter)
+      else if (graphicsState.GetLineJoinStyle() == LineJoinStyle::Miter)
       {
         float tangent{ 1.f / std::tan(std::acos(previousDirection.Dot(-direction)) / 2.f) };
         Vector2 t1{ tangent * halfThickness * direction };
@@ -138,9 +118,10 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
 
     if (i == count - 1)
     {
-      if (m_capStyle == LineCapStyle::Round)
+      if (graphicsState.GetLineCapStyle() == LineCapStyle::Round)
       {
-        DrawPie(p1, halfThickness, std::atan2(left.y, left.x), -numbers::PI, trianglesOut);
+        DrawPie(
+          p1, halfThickness, std::atan2(left.y, left.x), -numbers::PI, graphicsState.GetStrokeColor(), trianglesOut);
       }
     }
 
@@ -151,9 +132,9 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
   for (size_t i{ startOffset }; i < trianglesOut.size(); i++)
   {
     auto& triangle{ trianglesOut[i] };
-    triangle.a.position = Transform(triangle.a.position);
-    triangle.b.position = Transform(triangle.b.position);
-    triangle.c.position = Transform(triangle.c.position);
+    triangle.a.position = graphicsState.Transform(triangle.a.position);
+    triangle.b.position = graphicsState.Transform(triangle.b.position);
+    triangle.c.position = graphicsState.Transform(triangle.c.position);
   }
 }
 
@@ -161,6 +142,7 @@ void Polyline::DrawPie(const Vector2& center,
                        float radius,
                        float beginAngle,
                        float angleSize,
+                       const Vector3& color,
                        std::vector<Triangle>& out) const
 {
   int numSteps{ 10 };
@@ -172,12 +154,6 @@ void Polyline::DrawPie(const Vector2& center,
     out.push_back(Triangle{ center,
                             center + radius * Vector2{ std::cos(sliceAngleBegin), std::sin(sliceAngleBegin) },
                             center + radius * Vector2{ std::cos(sliceAngleEnd), std::sin(sliceAngleEnd) },
-                            m_color });
+                            color });
   }
-}
-
-Vector2 Polyline::Transform(const Vector2& point) const
-{
-  Vector3 result{ m_ctm * Vector3{ point.x, point.y, 1.f } };
-  return { result.x / result.z, result.y / result.z };
 }

@@ -14,6 +14,7 @@ class PDFStreamReader
   std::stack<float> m_stack;
 
   std::string_view NextToken();
+  GraphicsState& GetGraphicsState();
   float PopFloat();
   int PopInt();
   Vector2 PopVector2();
@@ -22,12 +23,8 @@ class PDFStreamReader
   CTM PopCTM();
   static Vector3 CMYKtoRGB(const Vector4& cmyk);
 
-  std::vector<Polyline> m_polylines;
-  LineCapStyle m_currentLineCapStyle;
-  LineJoinStyle m_currentLineJoinStyle;
-  Vector3 m_currentColor;
-  float m_currentLineWidth;
-  CTM m_currentCTM{ CTM::Identity() };
+  std::vector<std::pair<Polyline, GraphicsState>> m_polylines;
+  std::stack<GraphicsState> m_graphicStates;
 
 public:
   PDFStreamReader(const PDFStreamFinder::GraphicsStream& data);
