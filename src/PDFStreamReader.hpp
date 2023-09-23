@@ -18,7 +18,9 @@ class PDFStreamReader
   int PopInt();
   Vector2 PopVector2();
   Vector3 PopVector3();
+  Vector4 PopVector4();
   CTM PopCTM();
+  static Vector3 CMYKtoRGB(const Vector4& cmyk);
 
   std::vector<Polyline> m_polylines;
   LineCapStyle m_currentLineCapStyle;

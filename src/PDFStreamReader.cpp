@@ -59,6 +59,10 @@ void PDFStreamReader::Read()
     {
       m_currentColor = PopVector3();
     }
+    else if (token == "K")
+    {
+      m_currentColor = CMYKtoRGB(PopVector4());
+    }
     else if (token == "w")
     {
       m_currentLineWidth = PopFloat();
@@ -122,6 +126,15 @@ Vector3 PDFStreamReader::PopVector3()
   return Vector3{ z, y, x };
 }
 
+Vector4 PDFStreamReader::PopVector4()
+{
+  float x{ PopFloat() };
+  float y{ PopFloat() };
+  float z{ PopFloat() };
+  float w{ PopFloat() };
+  return Vector4{ w, z, y, x };
+}
+
 CTM PDFStreamReader::PopCTM()
 {
   float f{ PopFloat() };
@@ -131,4 +144,9 @@ CTM PDFStreamReader::PopCTM()
   float b{ PopFloat() };
   float a{ PopFloat() };
   return CTM{ a, c, e, b, d, f, 0.f, 0.f, 1.f };
+}
+
+Vector3 PDFStreamReader::CMYKtoRGB(const Vector4& cmyk)
+{
+  return { (1.f - cmyk.x) * (1.f - cmyk.w), (1.f - cmyk.y) * (1.f - cmyk.w), (1.f - cmyk.z) * (1.f - cmyk.w) };
 }
