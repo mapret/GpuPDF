@@ -18,12 +18,14 @@ class PDFStreamReader
   int PopInt();
   Vector2 PopVector2();
   Vector3 PopVector3();
+  CTM PopCTM();
 
   std::vector<Polyline> m_polylines;
   LineCapStyle m_currentLineCapStyle;
   LineJoinStyle m_currentLineJoinStyle;
   Vector3 m_currentColor;
   float m_currentLineWidth;
+  CTM m_currentCTM{ CTM::Identity() };
 
 public:
   PDFStreamReader(const PDFStreamFinder::GraphicsStream& data);

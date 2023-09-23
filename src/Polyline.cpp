@@ -26,6 +26,11 @@ void Polyline::SetLineWidth(float lineWidth)
   m_lineWidth = lineWidth;
 }
 
+void Polyline::SetCTM(const CTM& ctm)
+{
+  m_ctm = ctm;
+}
+
 void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
 {
   //     miterLength = 1 / sin(phi / 2)
@@ -37,6 +42,8 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
   Vector2 previousDirection;
   Vector2 previousLeft;
   float halfThickness{ m_lineWidth / 2.f };
+
+  size_t startOffset{ trianglesOut.size() };
 
   for (int i{ 0 }, count{ static_cast<int>(m_points.size()) - 1 }; i < count; i++)
   {
@@ -140,6 +147,14 @@ void Polyline::GetTriangles(std::vector<Triangle>& trianglesOut) const
     previousDirection = direction;
     previousLeft = left;
   }
+
+  for (size_t i{ startOffset }; i < trianglesOut.size(); i++)
+  {
+    auto& triangle{ trianglesOut[i] };
+    triangle.a.position = Transform(triangle.a.position);
+    triangle.b.position = Transform(triangle.b.position);
+    triangle.c.position = Transform(triangle.c.position);
+  }
 }
 
 void Polyline::DrawPie(const Vector2& center,
@@ -159,4 +174,10 @@ void Polyline::DrawPie(const Vector2& center,
                             center + radius * Vector2{ std::cos(sliceAngleEnd), std::sin(sliceAngleEnd) },
                             m_color });
   }
+}
+
+Vector2 Polyline::Transform(const Vector2& point) const
+{
+  Vector3 result{ m_ctm * Vector3{ point.x, point.y, 1.f } };
+  return { result.x / result.z, result.y / result.z };
 }

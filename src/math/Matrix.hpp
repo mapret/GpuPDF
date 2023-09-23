@@ -67,6 +67,7 @@ class Matrix
 {
   constexpr static int SIZE{ ROWS * COLS };
   constexpr static bool HAS_XYZW{ ROWS <= 4 && COLS == 1 };
+  constexpr static bool IS_SQUARE{ ROWS == COLS };
   //  using Self = Matrix<T, ROWS, COLS>;
   using Base = std::conditional_t<
     4 < ROWS || 1 < COLS,
@@ -94,7 +95,7 @@ public:
     if constexpr (HAS_XYZW && ROWS >= 4) this->w = fillValue;
     if constexpr (!HAS_XYZW) this->m_data.fill(fillValue);
   }
-  // clang-format off
+  // clang-format on
 
   template<typename... Ts, typename = std::enable_if_t<sizeof...(Ts) == SIZE>>
   Matrix(Ts... values)
@@ -103,12 +104,21 @@ public:
   {
   }
 
+  template<typename = std::enable_if_t<IS_SQUARE>>
+  static Matrix Identity()
+  {
+    Matrix m{ T{ 0 } };
+    for (int i{ 0 }; i < ROWS; i++)
+      m.at(i, i) = T{ 1 };
+    return m;
+  }
+
   // clang-format off
   T& operator()(int y, int x)       { return at(y, x); }
   T  operator()(int y, int x) const { return at(y, x); }
   T* Data()             { if constexpr (HAS_XYZW) return &this->x; else return this->m_data.data(); }
   const T* Data() const { if constexpr (HAS_XYZW) return &this->x; else return this->m_data.data(); }
-  // clang-format off
+  // clang-format on
 
   // clang-format off
   /*
@@ -159,6 +169,17 @@ public:
     for (int i{ 0 }; i < SIZE; i++)
       dotProduct += at(i) * rhs.at(i);
     return dotProduct;
+  }
+
+  template<int ROWS_RHS, int COLS_RHS, typename = std::enable_if_t<COLS == ROWS_RHS>>
+  Matrix<T, ROWS, COLS_RHS> operator*(const Matrix<T, ROWS_RHS, COLS_RHS>& rhs) const
+  {
+    Matrix<T, ROWS, COLS_RHS> product{ T{ 0 } };
+    for (int y{ 0 }; y < ROWS; y++)
+      for (int x{ 0 }; x < COLS_RHS; x++)
+        for (int i{ 0 }; i < COLS; i++)
+          product(y, x) += at(y, i) * rhs(i, x);
+    return product;
   }
 
   T LengthSquared() const { return Dot(*this); }

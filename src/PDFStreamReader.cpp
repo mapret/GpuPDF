@@ -36,6 +36,7 @@ void PDFStreamReader::Read()
       m_polylines.back().SetCapStyle(m_currentLineCapStyle);
       m_polylines.back().SetColor(m_currentColor);
       m_polylines.back().SetLineWidth(m_currentLineWidth);
+      m_polylines.back().SetCTM(m_currentCTM);
       m_polylines.back().AddPoint(PopVector2());
     }
     else if (token == "l")
@@ -61,6 +62,11 @@ void PDFStreamReader::Read()
     else if (token == "w")
     {
       m_currentLineWidth = PopFloat();
+    }
+    else if (token == "cm")
+    {
+      // TODO: Append to existing matrix?
+      m_currentCTM = PopCTM();
     }
   }
 }
@@ -114,4 +120,15 @@ Vector3 PDFStreamReader::PopVector3()
   float y{ PopFloat() };
   float z{ PopFloat() };
   return Vector3{ z, y, x };
+}
+
+CTM PDFStreamReader::PopCTM()
+{
+  float f{ PopFloat() };
+  float e{ PopFloat() };
+  float d{ PopFloat() };
+  float c{ PopFloat() };
+  float b{ PopFloat() };
+  float a{ PopFloat() };
+  return CTM{ a, c, e, b, d, f, 0.f, 0.f, 1.f };
 }
