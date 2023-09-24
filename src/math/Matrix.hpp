@@ -104,7 +104,7 @@ public:
   {
   }
 
-  template<typename = std::enable_if_t<IS_SQUARE>>
+  template<bool _unused = true, typename = std::enable_if_t<IS_SQUARE && _unused>>
   static Matrix Identity()
   {
     Matrix m{ T{ 0 } };
@@ -162,7 +162,7 @@ public:
   friend Matrix operator/(T scalar, const Matrix& rhs) { Matrix copy; for (int i{ 0 }; i < SIZE; i++) copy.at(i) = scalar / rhs.at(i); return copy; };
   // clang-format on
 
-  template<typename = std::enable_if_t<COLS == 1>>
+  template<bool _unused = true, typename = std::enable_if_t<COLS == 1 && _unused>>
   T Dot(const Matrix& rhs) const
   {
     T dotProduct{ 0 };
