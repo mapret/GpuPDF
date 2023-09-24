@@ -15,6 +15,11 @@ void GraphicsState::SetStrokeColor(const Vector3& strokeColor)
   m_strokeColor = strokeColor;
 }
 
+void GraphicsState::SetFillColor(const Vector3& fillColor)
+{
+  m_fillColor = fillColor;
+}
+
 void GraphicsState::SetLineWidth(float lineWidth)
 {
   m_lineWidth = lineWidth;
@@ -38,6 +43,11 @@ LineJoinStyle GraphicsState::GetLineJoinStyle() const
 const Vector3& GraphicsState::GetStrokeColor() const
 {
   return m_strokeColor;
+}
+
+const Vector3& GraphicsState::GetFillColor() const
+{
+  return m_fillColor;
 }
 
 float GraphicsState::GetLineWidth() const

@@ -21,17 +21,13 @@ void Window::Run(const std::filesystem::path& sourceFile)
   std::thread loadThread{ [&]()
   {
     auto graphicStreams{ PDFStreamFinder{}.GetGraphicsStreams(sourceFile) };
+    PDFStreamReader reader;
     for (const auto& stream : graphicStreams)
     {
-      PDFStreamReader reader{ stream };
-      reader.Read();
-      auto triangles{ reader.CollectTriangles() };
-      renderer.AddTriangles(triangles);
-      renderer.SetDrawArea(reader.GetDrawArea());
-      Vector2i windowSize;
-      glfwGetWindowSize(window, &windowSize.x, &windowSize.y);
-      renderer.SetWindowSize(windowSize);
+      reader.Read(stream);
     }
+    renderer.AddTriangles(reader.CollectTriangles());
+    renderer.SetDrawArea(reader.GetDrawArea());
     renderer.Finish();
   } };
 

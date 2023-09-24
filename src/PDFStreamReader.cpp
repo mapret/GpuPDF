@@ -10,15 +10,18 @@ bool IsNumber(std::string_view token)
 }
 }
 
-PDFStreamReader::PDFStreamReader(const PDFStreamFinder::GraphicsStream& data)
-  : m_data(data.m_data)
-  , m_drawArea(data.m_drawArea)
+PDFStreamReader::PDFStreamReader()
 {
   m_graphicStates.emplace(); // Need to start with one graphics state on the stack
+  m_polylines.emplace_back();
 }
 
-void PDFStreamReader::Read()
+void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
 {
+  m_readPosition = 0;
+  m_drawArea = data.m_drawArea; // TODO: Draw area should not be per stream if there are multiple streams
+  m_data = data.m_data;
+
   while (true)
   {
     std::string_view token = NextToken();
@@ -50,14 +53,12 @@ void PDFStreamReader::Read()
     }
     else if (token == "m")
     {
-      m_polylines.emplace_back();
       m_polylines.back().second = GetGraphicsState();
       m_polylines.back().first.AddPoint(PopVector2());
     }
     else if (token == "l")
     {
-      if (!m_polylines.empty()) // TODO: Should the last point from the previous stream be used?
-        m_polylines.back().first.AddPoint(PopVector2());
+      m_polylines.back().first.AddPoint(PopVector2());
     }
     else if (token == "j")
     {
@@ -69,14 +70,29 @@ void PDFStreamReader::Read()
     }
     else if (token == "S")
     {
+      m_polylines.back().first.SetPathMode(PathMode::Stroke);
+      m_polylines.emplace_back();
+    }
+    else if (token == "f")
+    {
+      m_polylines.back().first.SetPathMode(PathMode::Fill);
+      m_polylines.emplace_back();
     }
     else if (token == "RG")
     {
       GetGraphicsState().SetStrokeColor(PopVector3());
     }
+    else if (token == "rg")
+    {
+      GetGraphicsState().SetFillColor(PopVector3());
+    }
     else if (token == "K")
     {
       GetGraphicsState().SetStrokeColor(CMYKtoRGB(PopVector4()));
+    }
+    else if (token == "k")
+    {
+      GetGraphicsState().SetFillColor(CMYKtoRGB(PopVector4()));
     }
     else if (token == "w")
     {

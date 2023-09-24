@@ -27,8 +27,8 @@ class PDFStreamReader
   std::stack<GraphicsState> m_graphicStates;
 
 public:
-  PDFStreamReader(const PDFStreamFinder::GraphicsStream& data);
-  void Read();
+  PDFStreamReader();
+  void Read(const PDFStreamFinder::GraphicsStream& data);
 
   std::vector<Triangle> CollectTriangles() const;
   const Rectangle& GetDrawArea() const;

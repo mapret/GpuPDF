@@ -6,7 +6,51 @@ void Polyline::AddPoint(const Vector2& point)
   m_points.push_back(point);
 }
 
+void Polyline::SetPathMode(PathMode pathMode)
+{
+  m_pathMode = pathMode;
+}
+
 void Polyline::GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const
+{
+  size_t startOffset{ trianglesOut.size() };
+
+  if (m_pathMode == PathMode::Stroke)
+    StrokePolyline(graphicsState, trianglesOut);
+  else
+    FillPolyline(graphicsState, trianglesOut);
+
+  for (size_t i{ startOffset }; i < trianglesOut.size(); i++)
+  {
+    auto& triangle{ trianglesOut[i] };
+    triangle.a.position = graphicsState.Transform(triangle.a.position);
+    triangle.b.position = graphicsState.Transform(triangle.b.position);
+    triangle.c.position = graphicsState.Transform(triangle.c.position);
+  }
+}
+
+void Polyline::DrawPie(const Vector2& center,
+                       float radius,
+                       float beginAngle,
+                       float angleSize,
+                       const Vector3& color,
+                       std::vector<Triangle>& out) const
+{
+  // TODO: Make the number of steps dependent on angleSize
+  int numSteps{ 10 };
+  float stepsize{ angleSize / numSteps };
+  for (int i{ 0 }; i < numSteps; i++)
+  {
+    float sliceAngleBegin{ beginAngle + stepsize * i };
+    float sliceAngleEnd{ beginAngle + stepsize * (i + 1) };
+    out.push_back(Triangle{ center,
+                            center + radius * Vector2{ std::cos(sliceAngleBegin), std::sin(sliceAngleBegin) },
+                            center + radius * Vector2{ std::cos(sliceAngleEnd), std::sin(sliceAngleEnd) },
+                            color });
+  }
+}
+
+void Polyline::StrokePolyline(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const
 {
   //     miterLength = 1 / sin(phi / 2)
   // <=>         phi = asin(1 / miterLength) * 2
@@ -17,8 +61,6 @@ void Polyline::GetTriangles(const GraphicsState& graphicsState, std::vector<Tria
   Vector2 previousDirection;
   Vector2 previousLeft;
   float halfThickness{ graphicsState.GetLineWidth() / 2.f };
-
-  size_t startOffset{ trianglesOut.size() };
 
   for (int i{ 0 }, count{ static_cast<int>(m_points.size()) - 1 }; i < count; i++)
   {
@@ -128,32 +170,16 @@ void Polyline::GetTriangles(const GraphicsState& graphicsState, std::vector<Tria
     previousDirection = direction;
     previousLeft = left;
   }
-
-  for (size_t i{ startOffset }; i < trianglesOut.size(); i++)
-  {
-    auto& triangle{ trianglesOut[i] };
-    triangle.a.position = graphicsState.Transform(triangle.a.position);
-    triangle.b.position = graphicsState.Transform(triangle.b.position);
-    triangle.c.position = graphicsState.Transform(triangle.c.position);
-  }
 }
 
-void Polyline::DrawPie(const Vector2& center,
-                       float radius,
-                       float beginAngle,
-                       float angleSize,
-                       const Vector3& color,
-                       std::vector<Triangle>& out) const
+void Polyline::FillPolyline(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const
 {
-  int numSteps{ 10 };
-  float stepsize{ angleSize / numSteps };
-  for (int i{ 0 }; i < numSteps; i++)
+  // TODO: Do real triangulation
+  for (int i{ 1 }, count{ static_cast<int>(m_points.size()) - 1 }; i < count; i++)
   {
-    float sliceAngleBegin{ beginAngle + stepsize * i };
-    float sliceAngleEnd{ beginAngle + stepsize * (i + 1) };
-    out.push_back(Triangle{ center,
-                            center + radius * Vector2{ std::cos(sliceAngleBegin), std::sin(sliceAngleBegin) },
-                            center + radius * Vector2{ std::cos(sliceAngleEnd), std::sin(sliceAngleEnd) },
-                            color });
+    const Vector2& p0{ m_points[0] };
+    const Vector2& p1{ m_points[i] };
+    const Vector2& p2{ m_points[i + 1] };
+    trianglesOut.push_back(Triangle{ p0, p1, p2, graphicsState.GetFillColor() });
   }
 }
