@@ -1,40 +1,17 @@
-#include "Polyline.hpp"
+#include "SubPath.hpp"
 #include "math/Numbers.hpp"
 
-void Polyline::AddPoint(const Vector2& point)
+void SubPath::AddPoint(const Vector2& point)
 {
   m_points.push_back(point);
 }
 
-void Polyline::SetPathMode(PathMode pathMode)
-{
-  m_pathMode = pathMode;
-}
-
-void Polyline::GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const
-{
-  size_t startOffset{ trianglesOut.size() };
-
-  if (m_pathMode == PathMode::Stroke)
-    StrokePolyline(graphicsState, trianglesOut);
-  else
-    FillPolyline(graphicsState, trianglesOut);
-
-  for (size_t i{ startOffset }; i < trianglesOut.size(); i++)
-  {
-    auto& triangle{ trianglesOut[i] };
-    triangle.a.position = graphicsState.Transform(triangle.a.position);
-    triangle.b.position = graphicsState.Transform(triangle.b.position);
-    triangle.c.position = graphicsState.Transform(triangle.c.position);
-  }
-}
-
-void Polyline::DrawPie(const Vector2& center,
-                       float radius,
-                       float beginAngle,
-                       float angleSize,
-                       const Vector3& color,
-                       std::vector<Triangle>& out) const
+void SubPath::DrawPie(const Vector2& center,
+                      float radius,
+                      float beginAngle,
+                      float angleSize,
+                      const Vector3& color,
+                      std::vector<Triangle>& out) const
 {
   // TODO: Make the number of steps dependent on angleSize
   int numSteps{ 10 };
@@ -50,7 +27,7 @@ void Polyline::DrawPie(const Vector2& center,
   }
 }
 
-void Polyline::StrokePolyline(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const
+void SubPath::Stroke(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const
 {
   //     miterLength = 1 / sin(phi / 2)
   // <=>         phi = asin(1 / miterLength) * 2
@@ -172,7 +149,7 @@ void Polyline::StrokePolyline(const GraphicsState& graphicsState, std::vector<Tr
   }
 }
 
-void Polyline::FillPolyline(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const
+void SubPath::Fill(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const
 {
   // TODO: Do real triangulation
   for (int i{ 1 }, count{ static_cast<int>(m_points.size()) - 1 }; i < count; i++)

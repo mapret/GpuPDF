@@ -1,5 +1,4 @@
 #include "PDFStreamReader.hpp"
-#include "Polyline.hpp"
 #include <iostream>
 
 namespace
@@ -13,7 +12,6 @@ bool IsNumber(std::string_view token)
 PDFStreamReader::PDFStreamReader()
 {
   m_graphicStates.emplace(); // Need to start with one graphics state on the stack
-  m_polylines.emplace_back();
 }
 
 void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
@@ -53,12 +51,12 @@ void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
     }
     else if (token == "m")
     {
-      m_polylines.back().second = GetGraphicsState();
-      m_polylines.back().first.AddPoint(PopVector2());
+      m_currentPath.AddNewSubPath();
+      m_currentPath.AddPoint(PopVector2());
     }
     else if (token == "l")
     {
-      m_polylines.back().first.AddPoint(PopVector2());
+      m_currentPath.AddPoint(PopVector2());
     }
     else if (token == "j")
     {
@@ -70,13 +68,15 @@ void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
     }
     else if (token == "S")
     {
-      m_polylines.back().first.SetPathMode(PathMode::Stroke);
-      m_polylines.emplace_back();
+      m_currentPath.SetPathMode(PathMode::Stroke);
+      m_paths.emplace_back(std::move(m_currentPath), GetGraphicsState());
+      m_currentPath = Path{};
     }
     else if (token == "f")
     {
-      m_polylines.back().first.SetPathMode(PathMode::Fill);
-      m_polylines.emplace_back();
+      m_currentPath.SetPathMode(PathMode::Fill);
+      m_paths.emplace_back(std::move(m_currentPath), GetGraphicsState());
+      m_currentPath = Path{};
     }
     else if (token == "RG")
     {
@@ -109,7 +109,7 @@ void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
 std::vector<Triangle> PDFStreamReader::CollectTriangles() const
 {
   std::vector<Triangle> triangles;
-  for (const auto& [polyline, graphicsState] : m_polylines)
+  for (const auto& [polyline, graphicsState] : m_paths)
     polyline.GetTriangles(graphicsState, triangles);
   return triangles;
 }

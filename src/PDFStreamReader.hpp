@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PDFStreamFinder.hpp"
-#include "Polyline.hpp"
+#include "Path.hpp"
 #include "math/Vector.hpp"
 #include <stack>
 #include <string>
@@ -23,7 +23,8 @@ class PDFStreamReader
   CTM PopCTM();
   static Vector3 CMYKtoRGB(const Vector4& cmyk);
 
-  std::vector<std::pair<Polyline, GraphicsState>> m_polylines;
+  Path m_currentPath;
+  std::vector<std::pair<Path, GraphicsState>> m_paths;
   std::stack<GraphicsState> m_graphicStates;
 
 public:
