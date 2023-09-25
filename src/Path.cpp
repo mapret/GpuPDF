@@ -15,9 +15,19 @@ void Path::AddNewSubPath()
   m_subPaths.emplace_back();
 }
 
+void Path::CloseSubPath()
+{
+  m_subPaths.back().ClosePath();
+}
+
 void Path::AddPoint(const Vector2& point)
 {
   m_subPaths.back().AddPoint(point);
+}
+
+void Path::AddBezierCurve(const Vector2& p1, const Vector2& p2, const Vector2& p3)
+{
+  m_subPaths.back().AddBezierCurve(p1, p2, p3);
 }
 
 void Path::GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const

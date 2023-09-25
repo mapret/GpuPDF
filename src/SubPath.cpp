@@ -7,6 +7,33 @@ void SubPath::AddPoint(const Vector2& point)
   m_points.push_back(point);
 }
 
+void SubPath::AddBezierCurve(const Vector2& p1, const Vector2& p2, const Vector2& p3)
+{
+  // TODO: Make the number of steps dependent on distance/curvature
+  int numSteps{ 5 };
+
+  if (m_points.empty()) // TODO: Why can his happen?
+    m_points.push_back(p1);
+
+  const Vector2& p0{ m_points.back() };
+
+  // Start with i=1 to not repeat the point p0
+  for (int i{ 1 }; i <= numSteps; i++)
+  {
+    float t{ static_cast<float>(i) / numSteps };
+    Vector2 p{ std::pow(1.f - t, 3.f) * p0 + 3.f * t * std::pow(1.f - t, 2.f) * p1 + 3.f * t * t * (1.f - t) * p2 +
+               std::pow(t, 3.f) * p3 };
+    m_points.push_back(p);
+  }
+}
+
+void SubPath::ClosePath()
+{
+  // TODO: Do this correctly (line join style between first and last segment)
+  Vector2 copy{ m_points.front() };
+  m_points.push_back(copy);
+}
+
 void SubPath::DrawPie(const Vector2& center,
                       float radius,
                       float beginAngle,

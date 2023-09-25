@@ -58,6 +58,17 @@ void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
     {
       m_currentPath.AddPoint(PopVector2());
     }
+    else if (token == "c")
+    {
+      Vector2 xy3{ PopVector2() };
+      Vector2 xy2{ PopVector2() };
+      Vector2 xy1{ PopVector2() };
+      m_currentPath.AddBezierCurve(xy1, xy2, xy3);
+    }
+    else if (token == "h")
+    {
+      m_currentPath.CloseSubPath();
+    }
     else if (token == "j")
     {
       GetGraphicsState().SetLineJoinStyle(static_cast<LineJoinStyle>(PopInt()));

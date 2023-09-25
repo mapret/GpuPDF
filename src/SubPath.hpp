@@ -20,4 +20,6 @@ public:
   void Stroke(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const;
   void Fill(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const;
   void AddPoint(const Vector2& point);
+  void AddBezierCurve(const Vector2& p1, const Vector2& p2, const Vector2& p3);
+  void ClosePath();
 };
