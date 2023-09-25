@@ -1,5 +1,6 @@
 {
   "dependencies": [
+    "cdt",
     "glfw3",
     "glew",
     "podofo"
