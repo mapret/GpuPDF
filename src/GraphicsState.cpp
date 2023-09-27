@@ -27,7 +27,7 @@ void GraphicsState::SetLineWidth(float lineWidth)
 
 void GraphicsState::SetTransform(const CTM& transform)
 {
-  m_transform = transform;
+  m_transform = m_transform * transform;
 }
 
 LineCapStyle GraphicsState::GetLineCapStyle() const

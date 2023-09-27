@@ -133,12 +133,16 @@ const Rectangle& PDFStreamReader::GetDrawArea() const
 std::string_view PDFStreamReader::NextToken()
 {
   size_t startRead{ m_readPosition };
-  while (m_readPosition < m_data.size() && m_data[m_readPosition] != ' ' && m_data[m_readPosition] != '\n')
+  while (m_readPosition < m_data.size() && m_data[m_readPosition] != ' ' && m_data[m_readPosition] != '\n' &&
+         m_data[m_readPosition] != '\r')
     m_readPosition++;
   if (m_readPosition == m_data.size())
     return {};
-  m_readPosition++;
-  return std::string_view(m_data.data() + startRead, m_readPosition - startRead - 1);
+  size_t endRead{ m_readPosition };
+  while (m_readPosition < m_data.size() &&
+         (m_data[m_readPosition] == ' ' || m_data[m_readPosition] == '\n' || m_data[m_readPosition] == '\r'))
+    m_readPosition++;
+  return std::string_view(m_data.data() + startRead, endRead - startRead);
 }
 
 GraphicsState& PDFStreamReader::GetGraphicsState()
