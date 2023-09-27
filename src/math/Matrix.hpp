@@ -53,6 +53,9 @@ public:
     : m_data{ values... }
   {
   }
+
+  T& at2(int i) { return m_data[i]; };
+  T at2(int i) const { return m_data[i]; };
 };
 }
 
@@ -77,10 +80,10 @@ class Matrix
                        std::conditional_t<ROWS == 3, detail::Matrix3Base<T>, detail::Matrix4Base<T>>>>;
 
   // clang-format off
-  T& at(int y, int x)       { return at(y * COLS + x); }
-  T  at(int y, int x) const { return at(y * COLS + x); }
-  T& at(int i)       { if constexpr (HAS_XYZW) return this->at2(i); else return this->m_data[i]; }
-  T  at(int i) const { if constexpr (HAS_XYZW) return this->at2(i); else return this->m_data[i]; }
+  T& at(int y, int x)       { return this->at2(y * COLS + x); }
+  T  at(int y, int x) const { return this->at2(y * COLS + x); }
+  T& at(int i)              { return this->at2(i); }
+  T  at(int i) const        { return this->at2(i); }
   // clang-format on
 
 public:
@@ -99,7 +102,6 @@ public:
 
   template<typename... Ts, typename = std::enable_if_t<sizeof...(Ts) == SIZE>>
   Matrix(Ts... values)
-    //: m_data{ values... } {  }
     : Base{ values... }
   {
   }

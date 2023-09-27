@@ -7,6 +7,8 @@
 #include "math/Triangle.hpp"
 #include <vector>
 
+class Window;
+
 namespace gl
 {
 class Renderer
@@ -20,6 +22,15 @@ class Renderer
   Rectangle m_drawArea{ { 0.f, 0.f }, { 100.f, 100.f } };
   bool m_drawAreaChanged{ true };
 
+  int m_zoomLevel{ 0 };
+  Vector2 m_pan{ 0.f };
+  constexpr static float ZOOM_BASE{ 1.2f };
+  constexpr static int MIN_ZOOM_LEVEL{ -8 };
+  constexpr static int MAX_ZOOM_LEVEL{ 16 };
+
+  bool m_leftButtonPressed{false};
+  Vector2i m_lastMousePosition;
+
   std::vector<Triangle> m_triangles;
 
   unsigned m_fbo{ 0 };
@@ -30,7 +41,7 @@ class Renderer
   void RecreateFramebuffer();
 
 public:
-  Renderer();
+  Renderer(Window& window);
   ~Renderer();
   void SetTriangleBuffer(std::vector<Triangle>&& triangles);
   void AddTriangles(const std::vector<Triangle>& triangles);

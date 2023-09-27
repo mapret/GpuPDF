@@ -1,6 +1,7 @@
 #include "Renderer.hpp"
 #include "OpenGL/Buffer.hpp"
 #include "OpenGL/Error.hpp"
+#include "Window.hpp"
 #include <format>
 #include <gl/glew.h>
 #include <iostream>
@@ -29,13 +30,48 @@ void main() {
 
 namespace gl
 {
-Renderer::Renderer()
+Renderer::Renderer(Window& window)
   : m_program(scalingVertexShader, passthroughFragmentShader)
 {
   CheckError();
 
   glEnable(GL_MULTISAMPLE);
   glDisable(GL_DEPTH_TEST);
+
+  window.SetMouseMoveCallback(
+    [this](const Vector2i& position)
+  {
+    if (m_leftButtonPressed)
+    {
+      Vector2i movement{ m_lastMousePosition - position };
+      m_pan.x += static_cast<float>(movement.x); // TODO: Change once a convert-constructor for Matrix exists
+      m_pan.y += static_cast<float>(movement.y);
+      m_lastMousePosition = position;
+      m_drawAreaChanged = true;
+    }
+  });
+  window.SetMouseButtonCallback(
+    [this](MouseEvents::MouseButton button, MouseEvents::MouseAction action, const Vector2i& position)
+  {
+    if (button == MouseEvents::MouseButton::Left)
+    {
+      if (action == MouseEvents::MouseAction::Press)
+      {
+        m_leftButtonPressed = true;
+        m_lastMousePosition = position;
+      }
+      else
+      {
+        m_leftButtonPressed = false;
+      }
+    }
+  });
+  window.SetMouseWheelHandler(
+    [this](int offset, const Vector2i& mousePosition)
+  {
+    m_zoomLevel = std::clamp(m_zoomLevel + offset, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL);
+    m_drawAreaChanged = true;
+  });
 }
 
 Renderer::~Renderer()
@@ -109,6 +145,7 @@ void Renderer::Draw()
 
     float drawAreaAspectRatio{ m_drawArea.AspectRatio() };
     float windowAspectRatio{ static_cast<float>(m_windowSize.x) / m_windowSize.y };
+    float zoom{ std::pow(ZOOM_BASE, static_cast<float>(m_zoomLevel)) };
     if (windowAspectRatio > drawAreaAspectRatio) // height-restricted
     {
       float heightScale{ 1.f / m_drawArea.Height() * 2 };
@@ -123,6 +160,10 @@ void Renderer::Draw()
       scaling.y = widthScale * windowAspectRatio;
       scaling.w = -windowAspectRatio / drawAreaAspectRatio;
     }
+    scaling.x *= zoom;
+    scaling.y *= zoom;
+    scaling.z -= m_pan.x / m_windowSize.x * 2;
+    scaling.w += m_pan.y / m_windowSize.y * 2;
 
     m_program.SetUniformValue(m_program.GetUniformLocation("inputScaling"), scaling);
   }
