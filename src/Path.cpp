@@ -5,9 +5,9 @@ Path::Path()
   m_subPaths.emplace_back();
 }
 
-void Path::SetPathMode(PathMode pathMode)
+void Path::AddPathMode(PathMode pathMode)
 {
-  m_pathMode = pathMode;
+  m_pathMode |= pathMode;
 }
 
 void Path::AddNewSubPath()
@@ -34,12 +34,12 @@ void Path::GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle
 {
   size_t startOffset{ trianglesOut.size() };
 
-  if (m_pathMode == PathMode::Stroke)
+  if (EnumFlagSet(m_pathMode, PathMode::Stroke))
   {
     for (const SubPath& subPath : m_subPaths)
       subPath.Stroke(graphicsState, trianglesOut);
   }
-  else
+  if (EnumFlagSet(m_pathMode, PathMode::Fill))
   {
     for (const SubPath& subPath : m_subPaths)
       subPath.Fill(graphicsState, trianglesOut);

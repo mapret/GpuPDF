@@ -2,25 +2,28 @@
 
 #include "GraphicsState.hpp"
 #include "SubPath.hpp"
+#include "math/EnumFlagOperators.hpp"
 #include "math/Triangle.hpp"
 #include "math/Vector.hpp"
 #include <vector>
 
-enum class PathMode
+enum class PathMode : unsigned
 {
-  Fill,
-  Stroke,
+  None = 0,
+  Fill = (1 << 0),
+  Stroke = (1 << 1),
 };
+DEFINE_ENUM_FLAGS(PathMode, unsigned)
 
 class Path
 {
   std::vector<SubPath> m_subPaths;
-  PathMode m_pathMode;
+  PathMode m_pathMode{ PathMode::None };
 
 public:
   Path();
 
-  void SetPathMode(PathMode pathMode);
+  void AddPathMode(PathMode pathMode);
   void AddNewSubPath();
   void CloseSubPath();
   void AddPoint(const Vector2& point);

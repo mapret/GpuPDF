@@ -31,7 +31,7 @@ void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
       std::string copy{ token };
       m_stack.push(std::stof(copy));
     }
-    if (token == "q")
+    else if (token == "q")
     {
       if (m_graphicStates.empty())
       {
@@ -79,13 +79,35 @@ void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
     }
     else if (token == "S")
     {
-      m_currentPath.SetPathMode(PathMode::Stroke);
+      m_currentPath.AddPathMode(PathMode::Stroke);
+      m_paths.emplace_back(std::move(m_currentPath), GetGraphicsState());
+      m_currentPath = Path{};
+    }
+    else if (token == "s")
+    {
+      m_currentPath.CloseSubPath();
+      m_currentPath.AddPathMode(PathMode::Stroke);
+      m_paths.emplace_back(std::move(m_currentPath), GetGraphicsState());
+      m_currentPath = Path{};
+    }
+    else if (token == "b")
+    {
+      m_currentPath.CloseSubPath();
+      m_currentPath.AddPathMode(PathMode::Fill);
+      m_currentPath.AddPathMode(PathMode::Stroke);
       m_paths.emplace_back(std::move(m_currentPath), GetGraphicsState());
       m_currentPath = Path{};
     }
     else if (token == "f")
     {
-      m_currentPath.SetPathMode(PathMode::Fill);
+      m_currentPath.AddPathMode(PathMode::Fill);
+      m_paths.emplace_back(std::move(m_currentPath), GetGraphicsState());
+      m_currentPath = Path{};
+    }
+    else if (token == "f*")
+    {
+      // TODO: Handle winding order / odd-even rule for fill operations
+      m_currentPath.AddPathMode(PathMode::Fill);
       m_paths.emplace_back(std::move(m_currentPath), GetGraphicsState());
       m_currentPath = Path{};
     }
@@ -113,6 +135,10 @@ void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
     {
       // TODO: Append to existing matrix?
       GetGraphicsState().SetTransform(PopCTM());
+    }
+    else
+    {
+      // std::cout << "token: " << token << "\n";
     }
   }
 }
