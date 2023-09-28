@@ -1,5 +1,5 @@
 #include "GlewInitializer.hpp"
-#include <gl/glew.h>
+#include <GL/glew.h>
 #include <iostream>
 
 namespace gl

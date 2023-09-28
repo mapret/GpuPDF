@@ -3,7 +3,7 @@
 #include "OpenGL/Error.hpp"
 #include "Window.hpp"
 #include <format>
-#include <gl/glew.h>
+#include <GL/glew.h>
 #include <iostream>
 
 namespace
