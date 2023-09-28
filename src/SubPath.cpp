@@ -1,6 +1,5 @@
 #include "SubPath.hpp"
 #include "math/Numbers.hpp"
-#include <CDT.h>
 
 void SubPath::AddPoint(const Vector2& point)
 {
@@ -177,33 +176,12 @@ void SubPath::Stroke(const GraphicsState& graphicsState, std::vector<Triangle>& 
   }
 }
 
-void SubPath::Fill(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const
+bool SubPath::IsEmpty() const
 {
-  if (m_points.size() < 3)
-    return;
+  return m_points.empty();
+}
 
-  using Triangulator = CDT::Triangulation<float>;
-  Triangulator::V2dVec tVertices;
-  for (const Vector2& v : m_points)
-    tVertices.push_back(CDT::V2d<float>::make(v.x, v.y));
-
-  std::vector<CDT::Edge> tEdges;
-  for (unsigned i{ 0 }, count{ static_cast<unsigned>(m_points.size()) }; i < count; i++)
-    tEdges.push_back(CDT::Edge{ i, (i + 1) % count });
-
-  CDT::RemoveDuplicatesAndRemapEdges(tVertices, tEdges);
-
-  Triangulator triangulator;
-  triangulator.insertVertices(tVertices);
-  triangulator.insertEdges(tEdges);
-  triangulator.eraseOuterTrianglesAndHoles();
-
-  auto convert{ [&](unsigned index) { return Vector2{ tVertices[index].x, tVertices[index].y }; } };
-  for (const auto& tTriangle : triangulator.triangles)
-  {
-    const Vector2& p0{ convert(tTriangle.vertices[0]) };
-    const Vector2& p1{ convert(tTriangle.vertices[1]) };
-    const Vector2& p2{ convert(tTriangle.vertices[2]) };
-    trianglesOut.push_back(Triangle{ p0, p1, p2, graphicsState.GetFillColor() });
-  }
+const std::vector<Vector2>& SubPath::GetPoints() const
+{
+  return m_points;
 }
