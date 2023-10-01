@@ -2,8 +2,8 @@
 #include "OpenGL/Buffer.hpp"
 #include "OpenGL/Error.hpp"
 #include "Window.hpp"
-#include <format>
 #include <GL/glew.h>
+#include <format>
 #include <iostream>
 
 namespace
@@ -44,8 +44,7 @@ Renderer::Renderer(Window& window)
     if (m_leftButtonPressed)
     {
       Vector2i movement{ m_lastMousePosition - position };
-      m_pan.x += static_cast<float>(movement.x); // TODO: Change once a convert-constructor for Matrix exists
-      m_pan.y += static_cast<float>(movement.y);
+      m_pan += Vector2{ movement };
       m_lastMousePosition = position;
       m_drawAreaChanged = true;
     }

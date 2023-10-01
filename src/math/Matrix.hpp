@@ -86,6 +86,17 @@ class Matrix
   T  at(int i) const        { return this->at2(i); }
   // clang-format on
 
+  template<int N,
+           typename U,
+           typename... Us,
+           typename = std::enable_if_t<std::is_integral_v<U> || std::is_same_v<U, T>>>
+  void FillConstruct(U value, Us... rest)
+  {
+    at(N) = static_cast<T>(value);
+    if constexpr (N + 1 < SIZE)
+      FillConstruct<N + 1>(rest...);
+  }
+
 public:
   Matrix() = default;
 
@@ -100,10 +111,28 @@ public:
   }
   // clang-format on
 
-  template<typename... Ts, typename = std::enable_if_t<sizeof...(Ts) == SIZE>>
+  template<typename... Ts,
+           typename = std::enable_if_t<sizeof...(Ts) == SIZE && std::conjunction_v<std::is_same<T, Ts>...>>>
   Matrix(Ts... values)
     : Base{ values... }
   {
+  }
+
+  // TODO: Why is "typename U = T" not possible for both constructors?
+  template<typename U = T,
+           typename... Ts,
+           typename = std::enable_if_t<(sizeof...(Ts) == SIZE) && !(std::conjunction_v<std::is_same<U, Ts>...>)>>
+  Matrix(Ts... values)
+  {
+    FillConstruct<0>(values...);
+  }
+
+  template<typename U>
+  explicit Matrix(const Matrix<U, ROWS, COLS>& source)
+  {
+    for (int y{ 0 }; y < ROWS; y++)
+      for (int x{ 0 }; x < COLS; x++)
+        at(y, x) = static_cast<T>(source(y, x));
   }
 
   template<bool _unused = true, typename = std::enable_if_t<IS_SQUARE && _unused>>
