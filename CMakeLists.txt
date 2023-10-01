@@ -22,6 +22,8 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 project(gpupdf C CXX)
 
+include(cmake/Warnings.cmake)
+
 file(GLOB_RECURSE gpupdf_sources "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/src/*.hpp")
 add_executable(gpupdf ${gpupdf_sources})
 

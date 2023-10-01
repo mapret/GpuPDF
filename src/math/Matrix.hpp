@@ -54,8 +54,8 @@ public:
   {
   }
 
-  T& at2(int i) { return m_data[i]; };
-  T at2(int i) const { return m_data[i]; };
+  T& at2(int i) { return m_data[i]; }
+  T at2(int i) const { return m_data[i]; }
 };
 }
 
@@ -187,10 +187,10 @@ public:
   Matrix operator-(T scalar) const { Matrix copy{ *this }; copy -= scalar; return copy; }
   Matrix operator*(T scalar) const { Matrix copy{ *this }; copy *= scalar; return copy; }
   Matrix operator/(T scalar) const { Matrix copy{ *this }; copy /= scalar; return copy; }
-  friend Matrix operator+(T scalar, const Matrix& rhs) { return rhs + scalar; };
-  friend Matrix operator-(T scalar, const Matrix& rhs) { return -rhs + scalar; };
-  friend Matrix operator*(T scalar, const Matrix& rhs) { return rhs * scalar; };
-  friend Matrix operator/(T scalar, const Matrix& rhs) { Matrix copy; for (int i{ 0 }; i < SIZE; i++) copy.at(i) = scalar / rhs.at(i); return copy; };
+  friend Matrix operator+(T scalar, const Matrix& rhs) { return rhs + scalar; }
+  friend Matrix operator-(T scalar, const Matrix& rhs) { return -rhs + scalar; }
+  friend Matrix operator*(T scalar, const Matrix& rhs) { return rhs * scalar; }
+  friend Matrix operator/(T scalar, const Matrix& rhs) { Matrix copy; for (int i{ 0 }; i < SIZE; i++) copy.at(i) = scalar / rhs.at(i); return copy; }
   // clang-format on
 
   template<bool _unused = true, typename = std::enable_if_t<COLS == 1 && _unused>>
@@ -215,6 +215,6 @@ public:
 
   T LengthSquared() const { return Dot(*this); }
   T Length() const { return std::sqrt(LengthSquared()); }
-  Matrix Normalized() const { return *this / Length(); };
-  void Normalize() { *this /= Length(); };
+  Matrix Normalized() const { return *this / Length(); }
+  void Normalize() { *this /= Length(); }
 };

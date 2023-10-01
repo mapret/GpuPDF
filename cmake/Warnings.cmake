@@ -1,0 +1,6 @@
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  add_compile_options(/W3 /permissive)
+else ()
+  add_compile_options(-Wall -pedantic)
+  add_compile_options(-Wextra-semi)
+endif ()

@@ -16,10 +16,10 @@ std::vector<PDFStreamFinder::GraphicsStream> PDFStreamFinder::GetGraphicsStreams
     {
       const auto& mediaBoxArray{ pdfObject->GetDictionary().MustGetKey("MediaBox").GetArray() };
       Rectangle mediaBox;
-      mediaBox.min.x = mediaBoxArray[0].GetReal();
-      mediaBox.min.y = mediaBoxArray[1].GetReal();
-      mediaBox.max.x = mediaBoxArray[2].GetReal();
-      mediaBox.max.y = mediaBoxArray[3].GetReal();
+      mediaBox.min.x = static_cast<float>(mediaBoxArray[0].GetReal());
+      mediaBox.min.y = static_cast<float>(mediaBoxArray[1].GetReal());
+      mediaBox.max.x = static_cast<float>(mediaBoxArray[2].GetReal());
+      mediaBox.max.y = static_cast<float>(mediaBoxArray[3].GetReal());
 
       if (pdfObject->GetDictionary().GetKey("Type")->GetName() == "Page")
       {
