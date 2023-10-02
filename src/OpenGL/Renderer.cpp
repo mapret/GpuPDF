@@ -3,7 +3,6 @@
 #include "OpenGL/Error.hpp"
 #include "Window.hpp"
 #include <GL/glew.h>
-#include <format>
 #include <iostream>
 
 namespace
@@ -44,7 +43,8 @@ Renderer::Renderer(Window& window)
     if (m_leftButtonPressed)
     {
       Vector2i movement{ m_lastMousePosition - position };
-      m_pan += Vector2{ movement };
+      float zoom{ std::pow(ZOOM_BASE, static_cast<float>(m_zoomLevel)) };
+      m_pan += Vector2{ movement } / zoom;
       m_lastMousePosition = position;
       m_drawAreaChanged = true;
     }
@@ -161,8 +161,8 @@ void Renderer::Draw()
     }
     scaling.x *= zoom;
     scaling.y *= zoom;
-    scaling.z -= m_pan.x / m_windowSize.x * 2;
-    scaling.w += m_pan.y / m_windowSize.y * 2;
+    scaling.z -= m_pan.x / m_windowSize.x * 2 * zoom - (zoom - 1.f) * scaling.z;
+    scaling.w += m_pan.y / m_windowSize.y * 2 * zoom + (zoom - 1.f) * scaling.w;
 
     m_program.SetUniformValue(m_program.GetUniformLocation("inputScaling"), scaling);
   }
