@@ -17,5 +17,6 @@ public:
   void Use() const;
   int GetUniformLocation(const char* name) const;
   void SetUniformValue(int location, const Vector4& vector);
+  void SetUniformValue(int location, const Matrix3& matrix);
 };
 }

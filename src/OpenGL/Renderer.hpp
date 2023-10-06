@@ -28,8 +28,8 @@ class Renderer
   constexpr static int MIN_ZOOM_LEVEL{ -8 };
   constexpr static int MAX_ZOOM_LEVEL{ 16 };
 
-  bool m_leftButtonPressed{false};
-  Vector2i m_lastMousePosition;
+  bool m_leftButtonPressed{ false };
+  Vector2 m_lastMousePosition;
 
   std::vector<Triangle> m_triangles;
 
@@ -38,6 +38,8 @@ class Renderer
   VertexArray m_vao;
   Program m_program;
 
+  Vector2 GetNormalizedMousePosition(const Vector2i& mousePosition);
+  Matrix3 GetViewportTransform() const;
   void RecreateFramebuffer();
 
 public:

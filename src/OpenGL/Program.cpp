@@ -72,3 +72,8 @@ void gl::Program::SetUniformValue(int location, const Vector4& vector)
 {
   glProgramUniform4fv(m_name, location, 1, vector.Data());
 }
+
+void gl::Program::SetUniformValue(int location, const Matrix3& matrix)
+{
+  glProgramUniformMatrix3fv(m_name, location, 1, GL_FALSE, matrix.Data());
+}

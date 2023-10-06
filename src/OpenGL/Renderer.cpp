@@ -11,9 +11,10 @@ const char* scalingVertexShader{ R"""(#version 330 core
 layout(location = 0) in vec2 position2d;
 layout(location = 1) in vec3 color;
 out vec3 colorPS;
-uniform vec4 inputScaling;
+uniform mat3 inputTransform;
 void main() {
-  gl_Position = vec4(position2d * inputScaling.xy + inputScaling.zw, 0.f, 1.f);
+  vec3 transformed = inputTransform * vec3(position2d, 1.f);
+  gl_Position = vec4(transformed.xy / transformed.z, 0.f, 1.f);
   colorPS = color;
 }
 )""" };
@@ -42,10 +43,11 @@ Renderer::Renderer(Window& window)
   {
     if (m_leftButtonPressed)
     {
-      Vector2i movement{ m_lastMousePosition - position };
+      Vector2 normalizedMousePosition{ GetNormalizedMousePosition(position) };
+      Vector2 movement{ m_lastMousePosition - normalizedMousePosition };
       float zoom{ std::pow(ZOOM_BASE, static_cast<float>(m_zoomLevel)) };
-      m_pan += Vector2{ movement } / zoom;
-      m_lastMousePosition = position;
+      m_pan += movement * (2.f / zoom);
+      m_lastMousePosition = normalizedMousePosition;
       m_drawAreaChanged = true;
     }
   });
@@ -57,7 +59,7 @@ Renderer::Renderer(Window& window)
       if (action == MouseEvents::MouseAction::Press)
       {
         m_leftButtonPressed = true;
-        m_lastMousePosition = position;
+        m_lastMousePosition = GetNormalizedMousePosition(position);
       }
       else
       {
@@ -68,8 +70,23 @@ Renderer::Renderer(Window& window)
   window.SetMouseWheelHandler(
     [this](int offset, const Vector2i& mousePosition)
   {
-    m_zoomLevel = std::clamp(m_zoomLevel + offset, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL);
-    m_drawAreaChanged = true;
+    int scrollDirection{ offset > 0 ? 1 : -1 };
+    Vector2 normalizedMousePosition{ GetNormalizedMousePosition(mousePosition) - 0.5f };
+    while (offset != 0)
+    {
+      int previousZoomLevel{ m_zoomLevel };
+      m_zoomLevel = std::clamp(m_zoomLevel + scrollDirection, MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL);
+
+      if (previousZoomLevel != m_zoomLevel)
+      {
+        float dpi{ 1.25f }; // TODO: How to get this value?
+        float zoom{ std::pow(ZOOM_BASE, static_cast<float>(scrollDirection == 1 ? m_zoomLevel : m_zoomLevel + 1)) };
+        m_pan += normalizedMousePosition / (zoom * 2.f * dpi * static_cast<float>(scrollDirection));
+        m_drawAreaChanged = true;
+      }
+
+      offset -= scrollDirection;
+    }
   });
 }
 
@@ -140,31 +157,16 @@ void Renderer::Draw()
 
   if (m_windowSizeChanged || m_drawAreaChanged)
   {
-    Vector4 scaling{ 1.f, 1.f, -1.f, -1.f };
-
     float drawAreaAspectRatio{ m_drawArea.AspectRatio() };
     float windowAspectRatio{ static_cast<float>(m_windowSize.x) / m_windowSize.y };
-    float zoom{ std::pow(ZOOM_BASE, static_cast<float>(m_zoomLevel)) };
-    if (windowAspectRatio > drawAreaAspectRatio) // height-restricted
-    {
-      float heightScale{ 1.f / m_drawArea.Height() * 2 };
-      scaling.x = heightScale / windowAspectRatio;
-      scaling.y = heightScale;
-      scaling.z = -drawAreaAspectRatio / windowAspectRatio;
-    }
-    else // width-restricted
-    {
-      float widthScale{ 1.f / m_drawArea.Width() * 2 };
-      scaling.x = widthScale;
-      scaling.y = widthScale * windowAspectRatio;
-      scaling.w = -windowAspectRatio / drawAreaAspectRatio;
-    }
-    scaling.x *= zoom;
-    scaling.y *= zoom;
-    scaling.z -= m_pan.x / m_windowSize.x * 2 * zoom - (zoom - 1.f) * scaling.z;
-    scaling.w += m_pan.y / m_windowSize.y * 2 * zoom + (zoom - 1.f) * scaling.w;
 
-    m_program.SetUniformValue(m_program.GetUniformLocation("inputScaling"), scaling);
+    Vector2 aspectRatioScale{ std::min(drawAreaAspectRatio / windowAspectRatio, 1.f),
+                              std::min(windowAspectRatio / drawAreaAspectRatio, 1.f) };
+    Matrix3 t{ Matrix3::Identity() };
+    t *= Matrix3::Scale((2.f / m_drawArea.Size()).cwiseProduct(aspectRatioScale));
+    t *= Matrix3::Translate({ -aspectRatioScale });
+    t *= GetViewportTransform();
+    m_program.SetUniformValue(m_program.GetUniformLocation("inputTransform"), t);
   }
   m_windowSizeChanged = false;
   m_drawAreaChanged = false;
@@ -184,6 +186,17 @@ void Renderer::Draw()
     0, 0, m_windowSize.x, m_windowSize.y, 0, 0, m_windowSize.x, m_windowSize.y, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
   CheckError();
+}
+
+Vector2 Renderer::GetNormalizedMousePosition(const Vector2i& mousePosition)
+{
+  return Vector2{ m_windowSize.x - mousePosition.x, mousePosition.y }.cwiseQuotient(Vector2{ m_windowSize });
+}
+
+Matrix3 Renderer::GetViewportTransform() const
+{
+  float zoom{ std::pow(ZOOM_BASE, static_cast<float>(m_zoomLevel)) };
+  return Matrix3::Translate(m_pan) * Matrix3::Scale(Vector2{ zoom });
 }
 
 void Renderer::RecreateFramebuffer()

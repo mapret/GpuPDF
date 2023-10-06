@@ -191,6 +191,12 @@ public:
   friend Matrix operator-(T scalar, const Matrix& rhs) { return -rhs + scalar; }
   friend Matrix operator*(T scalar, const Matrix& rhs) { return rhs * scalar; }
   friend Matrix operator/(T scalar, const Matrix& rhs) { Matrix copy; for (int i{ 0 }; i < SIZE; i++) copy.at(i) = scalar / rhs.at(i); return copy; }
+
+  // TODO: cwiseMultiply and cwiseProduct (also divide) are very easy to confuse
+  Matrix& cwiseMultiply(const Matrix& rhs) { for (int i{ 0 }; i < SIZE; i++) at(i) *= rhs.at(i); return *this; }
+  Matrix& cwiseDivide  (const Matrix& rhs) { for (int i{ 0 }; i < SIZE; i++) at(i) /= rhs.at(i); return *this; }
+  Matrix cwiseProduct (const Matrix& rhs) { Matrix copy{ *this }; copy.cwiseMultiply(rhs); return copy; }
+  Matrix cwiseQuotient(const Matrix& rhs) { Matrix copy{ *this }; copy.cwiseDivide(rhs);   return copy; }
   // clang-format on
 
   template<bool _unused = true, typename = std::enable_if_t<COLS == 1 && _unused>>
@@ -213,8 +219,65 @@ public:
     return product;
   }
 
+  template<bool _unused = true, typename = std::enable_if_t<IS_SQUARE && _unused>>
+  Matrix& operator*=(const Matrix& rhs)
+  {
+    // TODO: Can this be done in-place?
+    Matrix result{ *this * rhs };
+    for (int i{ 0 }; i < SIZE; i++)
+      at(i) = result.at(i);
+    return *this;
+  }
+
   T LengthSquared() const { return Dot(*this); }
   T Length() const { return std::sqrt(LengthSquared()); }
   Matrix Normalized() const { return *this / Length(); }
   void Normalize() { *this /= Length(); }
+
+  // clang-format off
+  template<bool _unused = true, typename = std::enable_if_t<ROWS == 3 && COLS == 3 && _unused>>
+  static Matrix Translate(const Matrix<T, 2, 1>& t)
+  {
+    return Matrix{  1,   0,  0,
+                    0,   1,  0,
+                   t.x, t.y, 1 };
+  }
+  template<bool _unused = true, typename = std::enable_if_t<ROWS == 4 && COLS == 4 && _unused>>
+  static Matrix Translate(const Matrix<T, 3, 1>& t)
+  {
+    return Matrix{  1,   0,   0,  0,
+                    0,   1,   0,  0,
+                    0,   0,   1,  0,
+                   t.x, t.y, t.z, 1 };
+  }
+
+  template<bool _unused = true, typename = std::enable_if_t<ROWS == 3 && COLS == 3 && _unused>>
+  static Matrix Rotate(T angle)
+  {
+    const T cos{ std::cos(angle) };
+    const T sin{ std::sin(angle) };
+    return Matrix{ cos, -sin, 0,
+                   sin,  cos, 0,
+                    0,    0,  1 };
+  }
+
+  template<bool _unused = true, typename = std::enable_if_t<ROWS == 3 && COLS == 3 && _unused>>
+  static Matrix Scale(const Matrix<T, 2, 1>& s)
+  {
+    return Matrix{ s.x, 0,  0,
+                    0, s.y, 0,
+                    0,  0,  1 };
+  }
+  template<bool _unused = true, typename = std::enable_if_t<ROWS == 4 && COLS == 4 && _unused>>
+  static Matrix Scale(const Matrix<T, 3, 1>& s)
+  {
+    return Matrix{ s.x, 0,  0,  0,
+                   0,  s.y, 0,  0,
+                   0,   0, s.z, 0,
+                   0,   0,  0,  1 };
+  }
+  // clang-format on
 };
+
+using Matrix3 = Matrix<float, 3, 3>;
+using Matrix4 = Matrix<float, 4, 4>;
