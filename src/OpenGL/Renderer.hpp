@@ -16,6 +16,7 @@ class Renderer
   bool m_ready{ false };
   bool m_initialDraw{ true };
 
+  Vector2 m_dpi;
   Vector2i m_windowSize{ 1, 1 };
   bool m_windowSizeChanged{ true };
 
@@ -43,7 +44,7 @@ class Renderer
   void RecreateFramebuffer();
 
 public:
-  Renderer(Window& window);
+  Renderer(Window& window, const Vector2& dpi);
   ~Renderer();
   void SetTriangleBuffer(std::vector<Triangle>&& triangles);
   void AddTriangles(const std::vector<Triangle>& triangles);

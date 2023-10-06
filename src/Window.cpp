@@ -27,7 +27,9 @@ void Window::Run(const std::filesystem::path& sourceFile)
   GLFWwindow* window{ glfwCreateWindow(800, 600, "GpuPDF", nullptr, nullptr) };
   glfwMakeContextCurrent(window);
 
-  auto rendererPtr{ std::make_unique<gl::Renderer>(*this) };
+  Vector2 dpi;
+  glfwGetWindowContentScale(window, &dpi.x, &dpi.y);
+  auto rendererPtr{ std::make_unique<gl::Renderer>(*this, dpi) };
   auto& renderer{ *rendererPtr };
 
   std::thread loadThread{ [&]()

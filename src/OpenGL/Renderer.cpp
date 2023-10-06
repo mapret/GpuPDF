@@ -30,8 +30,9 @@ void main() {
 
 namespace gl
 {
-Renderer::Renderer(Window& window)
-  : m_program(scalingVertexShader, passthroughFragmentShader)
+Renderer::Renderer(Window& window, const Vector2& dpi)
+  : m_dpi(dpi)
+  , m_program(scalingVertexShader, passthroughFragmentShader)
 {
   CheckError();
 
@@ -79,9 +80,8 @@ Renderer::Renderer(Window& window)
 
       if (previousZoomLevel != m_zoomLevel)
       {
-        float dpi{ 1.25f }; // TODO: How to get this value?
         float zoom{ std::pow(ZOOM_BASE, static_cast<float>(scrollDirection == 1 ? m_zoomLevel : m_zoomLevel + 1)) };
-        m_pan += normalizedMousePosition / (zoom * 2.f * dpi * static_cast<float>(scrollDirection));
+        m_pan += normalizedMousePosition.cwiseQuotient(m_dpi) / (zoom * 2.f * static_cast<float>(scrollDirection));
         m_drawAreaChanged = true;
       }
 
