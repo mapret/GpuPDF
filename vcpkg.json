@@ -3,6 +3,7 @@
     "cdt",
     "glfw3",
     "glew",
-    "podofo"
+    "podofo",
+    "stb"
   ]
 }

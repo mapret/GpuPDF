@@ -5,6 +5,7 @@
 #include "OpenGL/VertexArray.hpp"
 #include "math/Rectangle.hpp"
 #include "math/Triangle.hpp"
+#include <filesystem>
 #include <vector>
 
 class Window;
@@ -52,5 +53,7 @@ public:
   void SetWindowSize(const Vector2i& windowSize);
   void SetDrawArea(const Rectangle& drawArea);
   void Draw();
+
+  void SaveScreenshotAsPNG(const std::filesystem::path& outputPath);
 };
 }

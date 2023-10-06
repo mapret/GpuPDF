@@ -5,6 +5,9 @@
 #include <GL/glew.h>
 #include <iostream>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+
 namespace
 {
 const char* scalingVertexShader{ R"""(#version 330 core
@@ -221,5 +224,51 @@ void Renderer::RecreateFramebuffer()
   glDeleteTextures(1, &texture);
 
   CheckError();
+}
+
+void Renderer::SaveScreenshotAsPNG(const std::filesystem::path& outputPath)
+{
+  // A framebuffer which writes to a multisample-texture cannot be used for glReadPixels, therefore an additional
+  // framebuffer and texture without multisample needs to be used
+
+  GLuint textureFbo;
+  glGenFramebuffers(1, &textureFbo);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, textureFbo);
+
+  GLuint texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_windowSize.x, m_windowSize.y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+  glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
+  GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, drawBuffers);
+  if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    std::cerr << "Framebuffer error\n";
+
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, textureFbo);
+  glBlitFramebuffer(
+    0, 0, m_windowSize.x, m_windowSize.y, 0, 0, m_windowSize.x, m_windowSize.y, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+  std::vector<std::byte> imageData(m_windowSize.x * m_windowSize.y * 3);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, textureFbo);
+  glReadBuffer(GL_COLOR_ATTACHMENT0);
+  glReadPixels(0, 0, m_windowSize.x, m_windowSize.y, GL_RGB, GL_UNSIGNED_BYTE, imageData.data());
+
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+  glDeleteFramebuffers(1, &textureFbo);
+  glDeleteTextures(1, &texture);
+  CheckError();
+
+  // Better not use stbi_flip_vertically_on_write() and change the global state of stb_image, flip image by using a
+  // negative stride instead
+  int lineSize{ m_windowSize.x * 3 };
+  std::string pathString{ outputPath.string() };
+  stbi_write_png(pathString.c_str(),
+                 m_windowSize.x,
+                 m_windowSize.y,
+                 3,
+                 imageData.data() + lineSize * (m_windowSize.y - 1),
+                 -lineSize);
 }
 }
