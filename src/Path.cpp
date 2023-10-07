@@ -31,6 +31,15 @@ void Path::AddBezierCurve(const Vector2& p1, const Vector2& p2, const Vector2& p
   m_subPaths.back().AddBezierCurve(p1, p2, p3);
 }
 
+int Path::GetApproximateTriangleCount() const
+{
+  int approximateTriangleCount{ 0 };
+  // This approximation should be good enough for now
+  for (const auto& subPath : m_subPaths)
+    approximateTriangleCount += static_cast<int>(subPath.GetPoints().size());
+  return approximateTriangleCount;
+}
+
 void Path::GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const
 {
   size_t startOffset{ trianglesOut.size() };

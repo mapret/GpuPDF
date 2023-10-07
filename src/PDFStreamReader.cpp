@@ -1,4 +1,5 @@
 #include "PDFStreamReader.hpp"
+#include <execution>
 #include <iostream>
 
 namespace
@@ -145,9 +146,27 @@ void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
 
 std::vector<Triangle> PDFStreamReader::CollectTriangles() const
 {
+  int approximateTriangleCount{ 0 };
+  for (const auto& path : m_paths)
+    approximateTriangleCount += path.first.GetApproximateTriangleCount();
+
   std::vector<Triangle> triangles;
-  for (const auto& [polyline, graphicsState] : m_paths)
-    polyline.GetTriangles(graphicsState, triangles);
+  triangles.reserve(approximateTriangleCount);
+
+  std::mutex trianglesWriteMutex;
+  std::for_each(std::execution::par,
+                m_paths.begin(),
+                m_paths.end(),
+                [&](const auto& pathAndGraphicsState)
+  {
+    const auto& [path, graphicsState]{ pathAndGraphicsState };
+    std::vector<Triangle> pathTriangles;
+    pathTriangles.reserve(path.GetApproximateTriangleCount());
+    path.GetTriangles(graphicsState, pathTriangles);
+    std::lock_guard trianglesWriteLock{ trianglesWriteMutex };
+    triangles.insert(triangles.end(), pathTriangles.begin(), pathTriangles.end());
+  });
+
   return triangles;
 }
 
