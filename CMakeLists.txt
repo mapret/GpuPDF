@@ -40,3 +40,8 @@ target_link_libraries(gpupdf PRIVATE glfw)
 target_link_libraries(gpupdf PRIVATE GLEW::GLEW)
 target_link_libraries(gpupdf PRIVATE CDT::CDT)
 target_include_directories(gpupdf PRIVATE ${Stb_INCLUDE_DIR})
+
+if (LINUX)
+  find_package(TBB CONFIG REQUIRED)
+  target_link_libraries(gpupdf PRIVATE TBB::tbb)
+endif ()
