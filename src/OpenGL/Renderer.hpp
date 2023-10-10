@@ -36,6 +36,7 @@ class Renderer
   std::vector<Triangle> m_triangles;
 
   unsigned m_fbo{ 0 };
+  int m_maxSampleCount{ -1 };
   GlewInitializer m_glewInitializer;
   VertexArray m_vao;
   Program m_program;

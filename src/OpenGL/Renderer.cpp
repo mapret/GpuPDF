@@ -210,10 +210,14 @@ void Renderer::RecreateFramebuffer()
   glGenFramebuffers(1, &m_fbo);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
 
+  if (m_maxSampleCount == -1)
+    glGetIntegerv(GL_MAX_SAMPLES, &m_maxSampleCount);
+
   GLuint texture;
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture);
-  glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 16, GL_RGB, m_windowSize.x, m_windowSize.y, GL_TRUE);
+  glTexImage2DMultisample(
+    GL_TEXTURE_2D_MULTISAMPLE, std::min(m_maxSampleCount, 16), GL_RGB, m_windowSize.x, m_windowSize.y, GL_TRUE);
   glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
   GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
   glDrawBuffers(1, drawBuffers);
