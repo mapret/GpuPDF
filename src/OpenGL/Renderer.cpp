@@ -42,8 +42,7 @@ Renderer::Renderer(Window& window, const Vector2& dpi)
   glEnable(GL_MULTISAMPLE);
   glDisable(GL_DEPTH_TEST);
 
-  window.SetMouseMoveCallback(
-    [this](const Vector2i& position)
+  window.SetMouseMoveCallback([this](const Vector2i& position)
   {
     if (m_leftButtonPressed)
     {
@@ -71,8 +70,7 @@ Renderer::Renderer(Window& window, const Vector2& dpi)
       }
     }
   });
-  window.SetMouseWheelHandler(
-    [this](int offset, const Vector2i& mousePosition)
+  window.SetMouseWheelHandler([this](int offset, const Vector2i& mousePosition)
   {
     int scrollDirection{ offset > 0 ? 1 : -1 };
     Vector2 normalizedMousePosition{ GetNormalizedMousePosition(mousePosition) - 0.5f };

@@ -154,19 +154,6 @@ public:
   const T* Data() const { if constexpr (HAS_XYZW) return &this->x; else return this->m_data.data(); }
   // clang-format on
 
-  // clang-format off
-  /*
-  template<typename = std::enable_if_t<ROWS >= 1 && COLS == 1>> T& x()       { return operator()(0, 0); }
-  template<typename = std::enable_if_t<ROWS >= 1 && COLS == 1>> T  x() const { return operator()(0, 0); }
-  template<typename = std::enable_if_t<ROWS >= 2 && COLS == 1>> T& y()       { return operator()(1, 0); }
-  template<typename = std::enable_if_t<ROWS >= 2 && COLS == 1>> T  y() const { return operator()(1, 0); }
-  template<typename = std::enable_if_t<ROWS >= 3 && COLS == 1>> T& z()       { return operator()(2, 0); }
-  template<typename = std::enable_if_t<ROWS >= 3 && COLS == 1>> T  z() const { return operator()(2, 0); }
-  template<typename = std::enable_if_t<ROWS >= 4 && COLS == 1>> T& w()       { return operator()(3, 0); }
-  template<typename = std::enable_if_t<ROWS >= 4 && COLS == 1>> T  w() const { return operator()(3, 0); }
-  */
-  // clang-format on
-
   bool operator==(const Matrix& rhs) const
   {
     for (int i{ 0 }; i < SIZE; i++)

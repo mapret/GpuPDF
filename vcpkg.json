@@ -3,7 +3,6 @@
     "cdt",
     "glfw3",
     "glew",
-    "podofo",
     "stb",
     "tbb",
     "zlib"

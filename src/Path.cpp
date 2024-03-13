@@ -72,6 +72,7 @@ void Path::GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle
     if (tEdges.size() < 3)
       return;
 
+    // TODO: Investigate asserts "vv[0] == iVedge2 ||..." from debug build
     Triangulator triangulator;
     triangulator.insertVertices(tVertices);
     triangulator.insertEdges(tEdges);
