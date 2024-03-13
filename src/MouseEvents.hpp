@@ -19,4 +19,4 @@ enum class MouseAction
 using MouseMoveCallback = std::function<void(const Vector2i& mousePosition)>;
 using MouseButtonCallback = std::function<void(MouseButton button, MouseAction action, const Vector2i& mousePosition)>;
 using MouseWheelCallback = std::function<void(int scrollAmount, const Vector2i& mousePosition)>;
-}
+} // namespace MouseEvents

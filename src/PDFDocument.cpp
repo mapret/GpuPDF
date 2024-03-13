@@ -155,7 +155,7 @@ PDFObject ReadObject(std::istream& in)
   NotImplemented("\"" + std::string(1, c) + "\"");
   return PDFObject{};
 }
-}
+} // namespace
 
 bool PDFDocument::Load(const std::filesystem::path& path)
 {

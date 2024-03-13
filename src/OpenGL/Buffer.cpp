@@ -32,4 +32,4 @@ void Buffer::SetData(std::ptrdiff_t dataLength, const void* data)
 {
   glBufferData(GL_ARRAY_BUFFER, dataLength, data, GL_STATIC_DRAW);
 }
-}
+} // namespace gl

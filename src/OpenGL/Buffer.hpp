@@ -18,4 +18,4 @@ public:
   void Unbind() const;
   void SetData(std::ptrdiff_t dataLength, const void* data);
 };
-}
+} // namespace gl

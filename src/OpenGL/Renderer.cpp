@@ -29,7 +29,7 @@ void main() {
   colorOut = colorPS;
 }
 )""" };
-}
+} // namespace
 
 namespace gl
 {
@@ -273,4 +273,4 @@ void Renderer::SaveScreenshotAsPNG(const std::filesystem::path& outputPath)
                  imageData.data() + lineSize * (m_windowSize.y - 1),
                  -lineSize);
 }
-}
+} // namespace gl

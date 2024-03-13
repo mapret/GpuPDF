@@ -60,7 +60,7 @@ protected:
   T& at2(int i) { return m_data[i]; }
   T at2(int i) const { return m_data[i]; }
 };
-}
+} // namespace detail
 
 template<typename T, int ROWS, int COLS>
 class Matrix final

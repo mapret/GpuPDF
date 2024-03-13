@@ -66,7 +66,7 @@ int Program::GetUniformLocation(const char* name) const
 {
   return glGetUniformLocation(m_name, name);
 }
-}
+} // namespace gl
 
 void gl::Program::SetUniformValue(int location, const Vector4& vector)
 {

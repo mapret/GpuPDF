@@ -57,4 +57,4 @@ public:
 
   void SaveScreenshotAsPNG(const std::filesystem::path& outputPath);
 };
-}
+} // namespace gl

@@ -11,4 +11,4 @@ GlewInitializer::GlewInitializer()
     std::cerr << "Failed to initialize GLEW\n";
   }
 }
-}
+} // namespace gl

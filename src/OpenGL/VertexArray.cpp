@@ -27,4 +27,4 @@ void VertexArray::Unbind() const
 {
   glBindVertexArray(0);
 }
-}
+} // namespace gl

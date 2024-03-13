@@ -30,4 +30,4 @@ void CheckError()
     std::cerr << "OpenGL error: " << std::format("{} (0x{:04x})", GetErrorString(error), error) << "\n";
   }
 }
-}
+} // namespace gl

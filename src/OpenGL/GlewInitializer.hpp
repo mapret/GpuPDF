@@ -7,4 +7,4 @@ class GlewInitializer
 public:
   GlewInitializer();
 };
-}
+} // namespace gl

@@ -19,4 +19,4 @@ public:
   void SetUniformValue(int location, const Vector4& vector);
   void SetUniformValue(int location, const Matrix3& matrix);
 };
-}
+} // namespace gl

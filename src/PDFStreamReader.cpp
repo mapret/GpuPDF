@@ -8,7 +8,7 @@ bool IsNumber(std::string_view token)
 {
   return token.find_first_not_of("0123456789.-") == std::string::npos;
 }
-}
+} // namespace
 
 PDFStreamReader::PDFStreamReader()
 {
