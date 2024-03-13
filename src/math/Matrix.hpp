@@ -11,6 +11,7 @@ class Matrix2Base
 {
 public:
   T x, y;
+protected:
   Matrix2Base() = default;
   Matrix2Base(T _x, T _y) : x(_x), y(_y) {}
   T& at2(int i)       { switch(i) { case 0: return x; default: return y; } }
@@ -22,6 +23,7 @@ class Matrix3Base
 {
 public:
   T x, y, z;
+protected:
   Matrix3Base() = default;
   Matrix3Base(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
   T& at2(int i)       { switch(i) { case 0: return x; case 1: return y; default: return z; } }
@@ -33,6 +35,7 @@ class Matrix4Base
 {
 public:
   T x, y, z, w;
+protected:
   Matrix4Base() = default;
   Matrix4Base(T _x, T _y, T _z, T _w) : x(_x), y(_y), z(_z), w(_w) {}
   T& at2(int i)       { switch(i) { case 0: return x; case 1: return y; case 2: return z; default: return w; } }
@@ -43,7 +46,7 @@ public:
 template<typename T, int SIZE>
 class MatrixElseBase
 {
-public:
+protected:
   std::array<T, SIZE> m_data;
 
   MatrixElseBase() = default;
@@ -60,7 +63,7 @@ public:
 }
 
 template<typename T, int ROWS, int COLS>
-class Matrix
+class Matrix final
   : public std::conditional_t<
       4 < ROWS || 1 < COLS,
       detail::MatrixElseBase<T, ROWS * COLS>,
