@@ -5,6 +5,7 @@
     "glew",
     "podofo",
     "stb",
-    "tbb"
+    "tbb",
+    "zlib"
   ]
 }
