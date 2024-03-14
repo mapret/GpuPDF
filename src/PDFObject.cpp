@@ -2,6 +2,11 @@
 #include <array>
 #include <zlib.h>
 
+void PDFObject::SetNull()
+{
+  m_type = Type::Null;
+}
+
 void PDFObject::SetBoolean(PDFObject::Boolean boolean)
 {
   m_type = Type::Boolean;

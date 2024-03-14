@@ -8,7 +8,7 @@ class PDFObject
 {
   enum class Type
   {
-    Undefined,
+    Null,
     Boolean,
     Integer,
     Decimal,
@@ -30,7 +30,7 @@ public:
   using Stream = std::vector<std::byte>;
 
 private:
-  Type m_type{ Type::Undefined };
+  Type m_type{ Type::Null };
   // TODO: Change to union?
   Boolean m_boolean;
   Integer m_integer;
@@ -44,6 +44,7 @@ private:
   Stream m_stream;
 
 public:
+  bool IsNull() const { return m_type == Type::Null; }
   bool IsBoolean() const { return m_type == Type::Boolean; }
   bool IsInteger() const { return m_type == Type::Integer; }
   bool IsDecimal() const { return m_type == Type::Decimal; }
@@ -63,6 +64,7 @@ public:
   const Reference& GetReference() const { return m_reference; }
   std::string GetStream() const;
 
+  void SetNull();
   void SetBoolean(Boolean boolean);
   void SetInteger(Integer integer);
   void SetDecimal(Decimal decimal);

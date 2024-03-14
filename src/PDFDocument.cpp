@@ -92,6 +92,14 @@ PDFObject ReadObject(std::istream& in)
     pdfObject.SetInteger(number);
     return pdfObject;
   }
+  else if (c == 'n')
+  {
+    for (int i{ 0 }; i < 4; i++)
+      in.get();
+    PDFObject pdfObject;
+    pdfObject.SetNull();
+    return pdfObject;
+  }
   else if (c == 't')
   {
     for (int i{ 0 }; i < 4; i++)

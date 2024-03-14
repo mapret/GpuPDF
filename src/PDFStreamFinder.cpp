@@ -32,7 +32,7 @@ std::vector<PDFStreamFinder::GraphicsStream> PDFStreamFinder::GetGraphicsStreams
         auto contents{ pdfObject.GetDictionary().at("Contents") };
         if (contents.IsReference())
         {
-          AddToStream(document.GetObjects().at(contents.GetReference()));
+          AddToStream(contents);
         }
         else if (contents.IsArray())
         {
