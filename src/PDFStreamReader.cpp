@@ -1,6 +1,7 @@
 #include "PDFStreamReader.hpp"
 #include <execution>
 #include <iostream>
+#include <ranges>
 
 namespace
 {
@@ -156,26 +157,28 @@ void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
 
 std::vector<Triangle> PDFStreamReader::CollectTriangles() const
 {
-  int approximateTriangleCount{ 0 };
-  for (const auto& path : m_paths)
-    approximateTriangleCount += path.first.GetApproximateTriangleCount();
+  std::vector<std::vector<Triangle>> perPathTriangles(m_paths.size());
+
+  std::ranges::iota_view pathIndexView{ 0, static_cast<int>(m_paths.size()) };
+  std::for_each(std::execution::par,
+                pathIndexView.begin(),
+                pathIndexView.end(),
+                [&](int pathIndex)
+  {
+    const auto& [path, graphicsState]{ m_paths[pathIndex] };
+    // Cannot write to return value directly because the order of paths must be preserved
+    perPathTriangles[pathIndex].reserve(path.GetApproximateTriangleCount());
+    path.GetTriangles(graphicsState, perPathTriangles[pathIndex]);
+  });
+
+  size_t triangleCount{ 0 };
+  for (const auto& pathTriangles : perPathTriangles)
+    triangleCount += pathTriangles.size();
 
   std::vector<Triangle> triangles;
-  triangles.reserve(approximateTriangleCount);
-
-  std::mutex trianglesWriteMutex;
-  std::for_each(std::execution::par,
-                m_paths.begin(),
-                m_paths.end(),
-                [&](const auto& pathAndGraphicsState)
-  {
-    const auto& [path, graphicsState]{ pathAndGraphicsState };
-    std::vector<Triangle> pathTriangles;
-    pathTriangles.reserve(path.GetApproximateTriangleCount());
-    path.GetTriangles(graphicsState, pathTriangles);
-    std::lock_guard trianglesWriteLock{ trianglesWriteMutex };
+  triangles.reserve(triangleCount);
+  for (const auto& pathTriangles : perPathTriangles)
     triangles.insert(triangles.end(), pathTriangles.begin(), pathTriangles.end());
-  });
 
   return triangles;
 }
