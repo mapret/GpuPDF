@@ -66,6 +66,16 @@ void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
       Vector2 xy1{ PopVector2() };
       m_currentPath.AddBezierCurve(xy1, xy2, xy3);
     }
+    else if (token == "re")
+    {
+      Vector4 rectangle{ PopVector4() };
+      m_currentPath.AddNewSubPath();
+      m_currentPath.AddPoint({ rectangle.x, rectangle.y });
+      m_currentPath.AddPoint({ rectangle.x + rectangle.z, rectangle.y });
+      m_currentPath.AddPoint({ rectangle.x + rectangle.z, rectangle.y + rectangle.w });
+      m_currentPath.AddPoint({ rectangle.x, rectangle.y + rectangle.w });
+      m_currentPath.CloseSubPath();
+    }
     else if (token == "h")
     {
       m_currentPath.CloseSubPath();
@@ -209,26 +219,26 @@ int PDFStreamReader::PopInt()
 
 Vector2 PDFStreamReader::PopVector2()
 {
-  float x{ PopFloat() };
   float y{ PopFloat() };
-  return Vector2{ y, x };
+  float x{ PopFloat() };
+  return Vector2{ x, y };
 }
 
 Vector3 PDFStreamReader::PopVector3()
 {
-  float x{ PopFloat() };
-  float y{ PopFloat() };
   float z{ PopFloat() };
-  return Vector3{ z, y, x };
+  float y{ PopFloat() };
+  float x{ PopFloat() };
+  return Vector3{ x, y, z };
 }
 
 Vector4 PDFStreamReader::PopVector4()
 {
-  float x{ PopFloat() };
-  float y{ PopFloat() };
-  float z{ PopFloat() };
   float w{ PopFloat() };
-  return Vector4{ w, z, y, x };
+  float z{ PopFloat() };
+  float y{ PopFloat() };
+  float x{ PopFloat() };
+  return Vector4{ x, y, z, w };
 }
 
 CTM PDFStreamReader::PopCTM()
