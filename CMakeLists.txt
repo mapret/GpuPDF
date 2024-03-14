@@ -10,7 +10,7 @@ if (NOT CMAKE_TOOLCHAIN_FILE)
   FetchContent_Declare(
       vcpkg
       GIT_REPOSITORY https://github.com/microsoft/vcpkg/
-      GIT_TAG 2023.07.21
+      GIT_TAG 2024.02.14
       GIT_SHALLOW TRUE
       GIT_PROGRESS TRUE
       USE_TERMINAL_DOWNLOAD TRUE
@@ -20,7 +20,7 @@ if (NOT CMAKE_TOOLCHAIN_FILE)
 endif ()
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-project(gpupdf C CXX)
+project(gpupdf CXX)
 
 include(cmake/Warnings.cmake)
 

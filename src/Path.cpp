@@ -61,10 +61,12 @@ void Path::GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle
         continue;
 
       unsigned vertexOffset{ static_cast<unsigned>(tVertices.size()) };
+      constexpr float VERTEX_RANGE{ 10e6 }; // TODO: Why is this necessary? Where are the large numbers coming from?
       for (const Vector2& v : subPath.GetPoints())
-        tVertices.push_back(CDT::V2d<float>{ v.x, v.y });
-      for (unsigned i{ 0 }, count{ static_cast<unsigned>(subPath.GetPoints().size()) - 1 }; i < count; i++)
-        tEdges.emplace_back(i + vertexOffset, i + 1 + vertexOffset);
+        if (v.x > -VERTEX_RANGE && v.x < VERTEX_RANGE && v.y > -VERTEX_RANGE && v.y < VERTEX_RANGE)
+          tVertices.push_back(CDT::V2d<float>{ v.x, v.y });
+      for (unsigned i{ vertexOffset }, count{ static_cast<unsigned>(tVertices.size()) - 1 }; i < count; i++)
+        tEdges.emplace_back(i, i + 1);
     }
 
     CDT::RemoveDuplicatesAndRemapEdges(tVertices, tEdges);
@@ -73,12 +75,14 @@ void Path::GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle
       return;
 
     // TODO: Investigate asserts "vv[0] == iVedge2 ||..." from debug build
-    Triangulator triangulator;
+    Triangulator triangulator{ CDT::VertexInsertionOrder::Auto, CDT::IntersectingConstraintEdges::TryResolve, 1e-4f };
     triangulator.insertVertices(tVertices);
     triangulator.insertEdges(tEdges);
     triangulator.eraseOuterTrianglesAndHoles();
 
-    auto convert{ [&](unsigned index) { return Vector2{ tVertices[index].x, tVertices[index].y }; } };
+    auto convert{ [&](unsigned index) {
+      return Vector2{ triangulator.vertices[index].x, triangulator.vertices[index].y };
+    } };
     for (const auto& tTriangle : triangulator.triangles)
     {
       const Vector2& p0{ convert(tTriangle.vertices[0]) };
