@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 
-set(VCPKG_TARGET_TRIPLET x64-windows-static)
+if (WIN32)
+  set(VCPKG_TARGET_TRIPLET x64-windows-static)
+endif ()
 #set(VCPKG_MANIFEST_MODE ON)
 
 set(CMAKE_CXX_STANDARD 20)
