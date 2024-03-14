@@ -21,7 +21,7 @@ bool IsDigit(char c)
 
 bool IsSpecialChar(char c)
 {
-  return c == '/' || c == '<' || c == '>' || c == '[' || c == ']';
+  return c == '/' || c == '<' || c == '>' || c == '[' || c == ']' || c == '(' || c == ')';
 }
 
 void SkipWhitespace(std::istream& in)
@@ -123,6 +123,26 @@ PDFObject ReadObject(std::istream& in)
     pdfObject.SetName(ReadName(in));
     return pdfObject;
   }
+  else if (c == '(')
+  {
+    in.get();
+    int openParanthesisCount{ 1 };
+    PDFObject::String string;
+    while (openParanthesisCount > 0)
+    {
+      c = in.get();
+      if (c == '(')
+        openParanthesisCount++;
+      if (c == ')')
+        openParanthesisCount--;
+      if (openParanthesisCount > 0)
+        string += c;
+    }
+
+    PDFObject pdfObject;
+    pdfObject.SetString(string);
+    return pdfObject;
+  }
   else if (c == '<')
   {
     in.get();
@@ -137,15 +157,33 @@ PDFObject ReadObject(std::istream& in)
         PDFObject::Name dictionaryKey{ ReadName(in) };
         PDFObject dictionaryValue{ ReadObject(in) };
         pdfObject.AddDictionaryEntry(dictionaryKey, dictionaryValue);
+        SkipWhitespace(in);
       }
-      SkipWhitespace(in);
       in.get();
       in.get();
       return pdfObject;
     }
     else
     {
-      NotImplemented("Hex-string");
+      PDFObject::String string;
+      bool running{ true };
+      while (running)
+      {
+        char upperNibble = in.get();
+        if (upperNibble == '>')
+          break;
+        char lowerNibble = in.get();
+        if (lowerNibble == '>')
+        {
+          lowerNibble = 0;
+          running = false;
+        }
+        c = static_cast<char>(upperNibble << 4) | lowerNibble;
+        string += c;
+      }
+      PDFObject pdfObject;
+      pdfObject.SetString(string);
+      return pdfObject;
     }
   }
   else if (c == '[')
@@ -156,6 +194,7 @@ PDFObject ReadObject(std::istream& in)
     while (in.peek() != ']')
     {
       pdfObject.AddArrayEntry(ReadObject(in));
+      SkipWhitespace(in);
     }
     in.get();
     return pdfObject;

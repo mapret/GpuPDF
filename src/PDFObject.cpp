@@ -31,6 +31,12 @@ void PDFObject::SetName(const PDFObject::Name& name)
   m_name = name;
 }
 
+void PDFObject::SetString(const PDFObject::String& string)
+{
+  m_type = Type::String;
+  m_string = string;
+}
+
 void PDFObject::AddArrayEntry(const PDFObject& pdfObject)
 {
   m_type = Type::Array;
