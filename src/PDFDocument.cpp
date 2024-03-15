@@ -167,6 +167,14 @@ PDFObject ReadObject(std::istream& in)
     {
       PDFObject::String string;
       bool running{ true };
+      auto convertNibble{ [](char n) -> char
+      {
+        if (n >= 'a' && n <= 'f')
+          return n - 'a' + 10;
+        else if (n >= 'A' && n <= 'F')
+          return n - 'A' + 10;
+        return n - '0';
+      } };
       while (running)
       {
         char upperNibble = in.get();
@@ -178,6 +186,10 @@ PDFObject ReadObject(std::istream& in)
           lowerNibble = 0;
           running = false;
         }
+        else
+          lowerNibble = convertNibble(lowerNibble);
+        upperNibble = convertNibble(upperNibble);
+
         c = static_cast<char>(upperNibble << 4) | lowerNibble;
         string += c;
       }
