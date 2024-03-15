@@ -8,6 +8,7 @@
 class SubPath
 {
   std::vector<Vector2> m_points;
+  bool m_closed{ false };
 
   void DrawPie(const Vector2& center,
                float radius,
@@ -23,5 +24,6 @@ public:
   void ClosePath();
 
   bool IsEmpty() const;
+  bool IsClosed() const;
   const std::vector<Vector2>& GetPoints() const;
 };

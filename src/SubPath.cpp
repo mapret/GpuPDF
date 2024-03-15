@@ -28,9 +28,11 @@ void SubPath::AddBezierCurve(const Vector2& p1, const Vector2& p2, const Vector2
 
 void SubPath::ClosePath()
 {
-  // TODO: Do this correctly (line join style between first and last segment)
-  Vector2 copy{ m_points.front() };
-  m_points.push_back(copy);
+  // Some PDF generators (eg. LibreOffice Writer) add the first vertex two times to the end of the subpath instead of
+  // just closing the subpath
+  while (m_points.size() >= 2 && m_points.front() == m_points.back())
+    m_points.pop_back();
+  m_closed = true;
 }
 
 void SubPath::DrawPie(const Vector2& center,
@@ -66,10 +68,12 @@ void SubPath::Stroke(const GraphicsState& graphicsState, std::vector<Triangle>& 
   Vector2 previousLeft;
   float halfThickness{ graphicsState.GetLineWidth() / 2.f };
 
-  for (int i{ 0 }, count{ static_cast<int>(m_points.size()) - 1 }; i < count; i++)
+  // TODO: Doing closed subpaths like this (count +-1) leads to the triangles of the first line segment being
+  // generated two times
+  for (int i{ 0 }, count{ static_cast<int>(m_points.size()) - (m_closed ? -1 : 1) }; i < count; i++)
   {
-    const Vector2& p0{ m_points[i] };
-    const Vector2& p1{ m_points[i + 1] };
+    const Vector2& p0{ m_points[i % m_points.size()] };
+    const Vector2& p1{ m_points[(i + 1) % m_points.size()] };
 
     Vector2 direction{ (p1 - p0).Normalized() };
     Vector2 left{ -direction.y, direction.x };
@@ -179,6 +183,11 @@ void SubPath::Stroke(const GraphicsState& graphicsState, std::vector<Triangle>& 
 bool SubPath::IsEmpty() const
 {
   return m_points.empty();
+}
+
+bool SubPath::IsClosed() const
+{
+  return m_closed;
 }
 
 const std::vector<Vector2>& SubPath::GetPoints() const

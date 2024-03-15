@@ -67,6 +67,8 @@ void Path::GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle
           tVertices.push_back(CDT::V2d<float>{ v.x, v.y });
       for (unsigned i{ vertexOffset }, count{ static_cast<unsigned>(tVertices.size()) - 1 }; i < count; i++)
         tEdges.emplace_back(i, i + 1);
+      if (subPath.IsClosed())
+        tEdges.emplace_back(static_cast<unsigned>(tVertices.size()) - 1, vertexOffset);
     }
 
     CDT::RemoveDuplicatesAndRemapEdges(tVertices, tEdges);
