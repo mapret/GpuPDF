@@ -9,6 +9,16 @@ void NotImplemented(const std::string& function)
   std::cerr << function << " not implemented\n";
 }
 
+char PeekChar(std::istream& in)
+{
+  return static_cast<char>(in.peek());
+}
+
+char GetChar(std::istream& in)
+{
+  return static_cast<char>(in.get());
+}
+
 bool IsWhitespace(char c)
 {
   return c == ' ' || c == '\t' || c == '\r' || c == '\n';
@@ -28,8 +38,8 @@ void SkipWhitespace(std::istream& in)
 {
   while (true)
   {
-    if (IsWhitespace(in.peek()))
-      in.get();
+    if (IsWhitespace(PeekChar(in)))
+      GetChar(in);
     else
       break;
   }
@@ -38,8 +48,8 @@ void SkipWhitespace(std::istream& in)
 PDFObject::Name ReadName(std::istream& in)
 {
   PDFObject::Name name;
-  while (!IsWhitespace(in.peek()) && !IsSpecialChar(in.peek()))
-    name += static_cast<char>(in.get());
+  while (!IsWhitespace(PeekChar(in)) && !IsSpecialChar(PeekChar(in)))
+    name += static_cast<char>(GetChar(in));
   return name;
 }
 
@@ -47,12 +57,12 @@ PDFObject ReadObject(std::istream& in)
 {
   SkipWhitespace(in);
 
-  char c{ static_cast<char>(in.peek()) };
+  char c{ static_cast<char>(PeekChar(in)) };
   if ((c >= '0' && c <= '9') || c == '.' || c == '-')
   {
     std::string s;
-    while (!IsWhitespace(in.peek()) && !IsSpecialChar(in.peek()))
-      s += static_cast<char>(in.get());
+    while (!IsWhitespace(PeekChar(in)) && !IsSpecialChar(PeekChar(in)))
+      s += static_cast<char>(GetChar(in));
     if (s.find_first_of('.') != std::string::npos)
     {
       PDFObject pdfObject;
@@ -64,14 +74,14 @@ PDFObject ReadObject(std::istream& in)
 
     int64_t positionBeforePeek{ in.tellg() };
 
-    if (IsWhitespace(in.peek()))
+    if (IsWhitespace(PeekChar(in)))
     {
       SkipWhitespace(in);
-      if (IsDigit(in.peek()))
+      if (IsDigit(PeekChar(in)))
       {
         int potentialGenerationNumber;
         in >> potentialGenerationNumber;
-        if (IsWhitespace(in.peek()))
+        if (IsWhitespace(PeekChar(in)))
         {
           char potentialReferenceSpecifier;
           in >> potentialReferenceSpecifier;
@@ -95,7 +105,7 @@ PDFObject ReadObject(std::istream& in)
   else if (c == 'n')
   {
     for (int i{ 0 }; i < 4; i++)
-      in.get();
+      GetChar(in);
     PDFObject pdfObject;
     pdfObject.SetNull();
     return pdfObject;
@@ -103,7 +113,7 @@ PDFObject ReadObject(std::istream& in)
   else if (c == 't')
   {
     for (int i{ 0 }; i < 4; i++)
-      in.get();
+      GetChar(in);
     PDFObject pdfObject;
     pdfObject.SetBoolean(true);
     return pdfObject;
@@ -111,26 +121,26 @@ PDFObject ReadObject(std::istream& in)
   else if (c == 'f')
   {
     for (int i{ 0 }; i < 5; i++)
-      in.get();
+      GetChar(in);
     PDFObject pdfObject;
     pdfObject.SetBoolean(false);
     return pdfObject;
   }
   else if (c == '/')
   {
-    in.get();
+    GetChar(in);
     PDFObject pdfObject;
     pdfObject.SetName(ReadName(in));
     return pdfObject;
   }
   else if (c == '(')
   {
-    in.get();
+    GetChar(in);
     int openParanthesisCount{ 1 };
     PDFObject::String string;
     while (openParanthesisCount > 0)
     {
-      c = in.get();
+      c = GetChar(in);
       if (c == '(')
         openParanthesisCount++;
       if (c == ')')
@@ -145,22 +155,22 @@ PDFObject ReadObject(std::istream& in)
   }
   else if (c == '<')
   {
-    in.get();
-    if (in.peek() == '<')
+    GetChar(in);
+    if (PeekChar(in) == '<')
     {
-      in.get();
+      GetChar(in);
       PDFObject pdfObject;
       SkipWhitespace(in);
-      while (in.peek() != '>')
+      while (PeekChar(in) != '>')
       {
-        in.get();
+        GetChar(in);
         PDFObject::Name dictionaryKey{ ReadName(in) };
         PDFObject dictionaryValue{ ReadObject(in) };
         pdfObject.AddDictionaryEntry(dictionaryKey, dictionaryValue);
         SkipWhitespace(in);
       }
-      in.get();
-      in.get();
+      GetChar(in);
+      GetChar(in);
       return pdfObject;
     }
     else
@@ -177,10 +187,10 @@ PDFObject ReadObject(std::istream& in)
       } };
       while (running)
       {
-        char upperNibble = in.get();
+        char upperNibble = GetChar(in);
         if (upperNibble == '>')
           break;
-        char lowerNibble = in.get();
+        char lowerNibble = GetChar(in);
         if (lowerNibble == '>')
         {
           lowerNibble = 0;
@@ -200,15 +210,15 @@ PDFObject ReadObject(std::istream& in)
   }
   else if (c == '[')
   {
-    in.get();
+    GetChar(in);
     PDFObject pdfObject;
     SkipWhitespace(in);
-    while (in.peek() != ']')
+    while (PeekChar(in) != ']')
     {
       pdfObject.AddArrayEntry(ReadObject(in));
       SkipWhitespace(in);
     }
-    in.get();
+    GetChar(in);
     return pdfObject;
   }
   NotImplemented("\"" + std::string(1, c) + "\"");
@@ -275,8 +285,8 @@ bool PDFDocument::Load(std::ifstream& in)
     in >> endobjOrStream;
     if (endobjOrStream == "stream")
     {
-      while (in.peek() == '\r' || in.peek() == '\n')
-        in.get();
+      while (PeekChar(in) == '\r' || PeekChar(in) == '\n')
+        GetChar(in);
       pdfStreams[objectId] = in.tellg();
     }
 

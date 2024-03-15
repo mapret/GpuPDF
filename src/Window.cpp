@@ -87,14 +87,14 @@ void Window::SetMouseWheelHandler(const MouseWheelCallback& callback)
   m_mouseWheelCallback = callback;
 }
 
-void Window::CursorPositionCallback_impl(GLFWwindow* window, double xPosition, double yPosition)
+void Window::CursorPositionCallback_impl(GLFWwindow* /*window*/, double xPosition, double yPosition)
 {
   m_self->m_currentMousePosition = Vector2i{ static_cast<int>(xPosition), static_cast<int>(yPosition) };
   if (m_self->m_mouseMoveCallback)
     m_self->m_mouseMoveCallback(m_self->m_currentMousePosition);
 }
 
-void Window::MouseButtonCallback_impl(GLFWwindow* window, int button, int action, int mods)
+void Window::MouseButtonCallback_impl(GLFWwindow* /*window*/, int button, int action, int /*mods*/)
 {
   if (m_self->m_mouseButtonCallback)
   {
@@ -110,6 +110,8 @@ void Window::MouseButtonCallback_impl(GLFWwindow* window, int button, int action
       case GLFW_MOUSE_BUTTON_RIGHT:
         mouseButton = MouseButton::Right;
         break;
+      default:
+        return;
     }
 
     MouseAction mouseAction;
@@ -121,13 +123,15 @@ void Window::MouseButtonCallback_impl(GLFWwindow* window, int button, int action
       case GLFW_RELEASE:
         mouseAction = MouseAction::Release;
         break;
+      default:
+        return;
     }
 
     m_self->m_mouseButtonCallback(mouseButton, mouseAction, m_self->m_currentMousePosition);
   }
 }
 
-void Window::ScrollCallback_impl(GLFWwindow* window, double xOffset, double yOffset)
+void Window::ScrollCallback_impl(GLFWwindow* /*window*/, double /*xOffset*/, double yOffset)
 {
   if (m_self->m_mouseWheelCallback)
     m_self->m_mouseWheelCallback(static_cast<int>(yOffset), m_self->m_currentMousePosition);

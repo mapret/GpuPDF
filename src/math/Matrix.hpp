@@ -83,10 +83,10 @@ class Matrix final
                        std::conditional_t<ROWS == 3, detail::Matrix3Base<T>, detail::Matrix4Base<T>>>>;
 
   // clang-format off
-  T& at(int y, int x)       { return this->at2(y * COLS + x); }
-  T  at(int y, int x) const { return this->at2(y * COLS + x); }
-  T& at(int i)              { return this->at2(i); }
-  T  at(int i) const        { return this->at2(i); }
+  T& at(int row, int col)       { return this->at2(row * COLS + col); }
+  T  at(int row, int col) const { return this->at2(row * COLS + col); }
+  T& at(int i)                  { return this->at2(i); }
+  T  at(int i) const            { return this->at2(i); }
   // clang-format on
 
   template<int N,
@@ -133,9 +133,9 @@ public:
   template<typename U>
   explicit Matrix(const Matrix<U, ROWS, COLS>& source)
   {
-    for (int y{ 0 }; y < ROWS; y++)
-      for (int x{ 0 }; x < COLS; x++)
-        at(y, x) = static_cast<T>(source(y, x));
+    for (int row{ 0 }; row < ROWS; row++)
+      for (int col{ 0 }; col < COLS; col++)
+        at(row, col) = static_cast<T>(source(row, col));
   }
 
   template<bool _unused = true, typename = std::enable_if_t<IS_SQUARE && _unused>>
@@ -148,8 +148,8 @@ public:
   }
 
   // clang-format off
-  T& operator()(int y, int x)       { return at(y, x); }
-  T  operator()(int y, int x) const { return at(y, x); }
+  T& operator()(int row, int col)       { return at(row, col); }
+  T  operator()(int row, int col) const { return at(row, col); }
   T* Data()             { if constexpr (HAS_XYZW) return &this->x; else return this->m_data.data(); }
   const T* Data() const { if constexpr (HAS_XYZW) return &this->x; else return this->m_data.data(); }
   // clang-format on
