@@ -1,5 +1,6 @@
 #include "PDFObject.hpp"
 #include <array>
+#include <ostream>
 #include <zlib.h>
 
 void PDFObject::SetNull()
@@ -90,4 +91,64 @@ std::string PDFObject::GetStream() const
   std::string stream(streambuffer.size(), ' ');
   std::memcpy(stream.data(), streambuffer.data(), streambuffer.size());
   return stream;
+}
+
+void PDFObject::DebugPrint(std::ostream& out) const
+{
+  DebugPrint(out, 0);
+}
+
+std::ostream& operator<<(std::ostream& out, const PDFObject& pdfObject)
+{
+  pdfObject.DebugPrint(out);
+  return out;
+}
+
+void PDFObject::DebugPrint(std::ostream& out, int indentation) const
+{
+  auto PrintArray{ [&]()
+  {
+    out << "[";
+    bool firstValue{ true };
+    for (const auto& value : GetArray())
+    {
+      if (firstValue)
+        firstValue = false;
+      else
+        out << ", ";
+      value.DebugPrint(out, indentation + 2);
+    }
+    out << "]";
+  } };
+
+  auto PrintDictionary{ [&]()
+  {
+    std::string indentationString(indentation + 2, ' ');
+    out << "{\n";
+    int remainingPrintCount{ static_cast<int>(GetDictionary().size()) };
+    for (const auto& [key, value] : GetDictionary())
+    {
+      out << indentationString << key << ": ";
+      value.DebugPrint(out, indentation + 2);
+      if (--remainingPrintCount != 0)
+        out << ",";
+      out << "\n";
+    }
+    out << std::string(indentation, ' ') << "}";
+  } };
+
+  // clang-format off
+  switch (m_type)
+  {
+    case Type::Null:       out << "null";                            break;
+    case Type::Boolean:    out << (GetBoolean() ? "true" : "false"); break;
+    case Type::Integer:    out << GetInteger();                      break;
+    case Type::Decimal:    out << GetDecimal();                      break;
+    case Type::Name:       out << "/" << GetName();                  break;
+    case Type::String:     out << "\"" << GetString() << "\"";       break;
+    case Type::Array:      PrintArray();                             break;
+    case Type::Dictionary: PrintDictionary();                        break;
+    case Type::Reference:  out << "R" << GetReference();             break;
+  }
+  // clang-format on
 }

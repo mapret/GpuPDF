@@ -270,6 +270,7 @@ bool PDFDocument::Load(std::ifstream& in)
     in >> _objectId >> _generationNumber >> _obj;
 
     PDFObject pdfObject{ ReadObject(in) };
+    // std::cout << "Object " << objectId << ": " << pdfObject << "\n";
     std::string endobjOrStream;
     in >> endobjOrStream;
     if (endobjOrStream == "stream")

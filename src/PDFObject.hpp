@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iosfwd>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -46,6 +47,8 @@ private:
   bool m_hasStream{ false };
   Stream m_stream;
 
+  void DebugPrint(std::ostream& out, int indentation) const;
+
 public:
   bool IsNull() const { return m_type == Type::Null; }
   bool IsBoolean() const { return m_type == Type::Boolean; }
@@ -79,4 +82,7 @@ public:
   void AddDictionaryEntry(const Name& name, const PDFObject& pdfObject);
   void SetReference(const Reference& reference);
   void SetStream(const Stream& stream);
+
+  void DebugPrint(std::ostream& out) const;
+  friend std::ostream& operator<<(std::ostream& out, const PDFObject& pdfObject);
 };
