@@ -228,17 +228,17 @@ public:
   template<bool _unused = true, typename = std::enable_if_t<ROWS == 3 && COLS == 3 && _unused>>
   static Matrix Translate(const Matrix<T, 2, 1>& t)
   {
-    return Matrix{  1,   0,  0,
-                    0,   1,  0,
-                   t.x, t.y, 1 };
+    return Matrix{ 1, 0, t.x,
+                   0, 1, t.y,
+                   0, 0,  1  };
   }
   template<bool _unused = true, typename = std::enable_if_t<ROWS == 4 && COLS == 4 && _unused>>
   static Matrix Translate(const Matrix<T, 3, 1>& t)
   {
-    return Matrix{  1,   0,   0,  0,
-                    0,   1,   0,  0,
-                    0,   0,   1,  0,
-                   t.x, t.y, t.z, 1 };
+    return Matrix{ 1, 0, 0, t.x,
+                   0, 1, 0, t.y,
+                   0, 0, 1, t.z,
+                   0, 0, 0,  1  };
   }
 
   template<bool _unused = true, typename = std::enable_if_t<ROWS == 3 && COLS == 3 && _unused>>
@@ -262,9 +262,9 @@ public:
   static Matrix Scale(const Matrix<T, 3, 1>& s)
   {
     return Matrix{ s.x, 0,  0,  0,
-                   0,  s.y, 0,  0,
-                   0,   0, s.z, 0,
-                   0,   0,  0,  1 };
+                    0, s.y, 0,  0,
+                    0,  0, s.z, 0,
+                    0,  0,  0,  1 };
   }
   // clang-format on
 };

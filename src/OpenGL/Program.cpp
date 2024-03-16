@@ -75,5 +75,6 @@ void gl::Program::SetUniformValue(int location, const Vector4& vector)
 
 void gl::Program::SetUniformValue(int location, const Matrix3& matrix)
 {
-  glProgramUniformMatrix3fv(m_name, location, 1, GL_FALSE, matrix.Data());
+  // Need to transpose because Matrix3 is row-major while OpenGL uses a column-major matrix layout
+  glProgramUniformMatrix3fv(m_name, location, 1, GL_TRUE, matrix.Data());
 }

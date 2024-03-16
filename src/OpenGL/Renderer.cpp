@@ -164,9 +164,9 @@ void Renderer::Draw()
     Vector2 aspectRatioScale{ std::min(drawAreaAspectRatio / windowAspectRatio, 1.f),
                               std::min(windowAspectRatio / drawAreaAspectRatio, 1.f) };
     Matrix3 t{ Matrix3::Identity() };
-    t *= Matrix3::Scale((2.f / m_drawArea.Size()).cwiseProduct(aspectRatioScale));
-    t *= Matrix3::Translate({ -aspectRatioScale });
     t *= GetViewportTransform();
+    t *= Matrix3::Translate({ -aspectRatioScale });
+    t *= Matrix3::Scale((2.f / m_drawArea.Size()).cwiseProduct(aspectRatioScale));
     m_program.SetUniformValue(m_program.GetUniformLocation("inputTransform"), t);
   }
   m_windowSizeChanged = false;
@@ -197,7 +197,7 @@ Vector2 Renderer::GetNormalizedMousePosition(const Vector2i& mousePosition)
 Matrix3 Renderer::GetViewportTransform() const
 {
   float zoom{ std::pow(ZOOM_BASE, static_cast<float>(m_zoomLevel)) };
-  return Matrix3::Translate(m_pan) * Matrix3::Scale(Vector2{ zoom });
+  return Matrix3::Scale(Vector2{ zoom }) * Matrix3::Translate(m_pan);
 }
 
 void Renderer::RecreateFramebuffer()
