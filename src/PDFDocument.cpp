@@ -236,7 +236,7 @@ bool PDFDocument::Load(std::ifstream& in)
 {
   in.seekg(0, std::ios::end);
   int64_t length{ in.tellg() };
-  int64_t readLength{ std::min(length, 30ll) };
+  int64_t readLength{ std::min<int64_t>(length, 30) };
   in.seekg(length - readLength, std::ios::beg);
 
   std::string trailer(readLength, ' ');

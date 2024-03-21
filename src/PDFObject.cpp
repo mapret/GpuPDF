@@ -1,5 +1,6 @@
 #include "PDFObject.hpp"
 #include <array>
+#include <cstring>
 #include <ostream>
 #include <zlib.h>
 
