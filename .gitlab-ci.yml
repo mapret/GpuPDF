@@ -1,0 +1,18 @@
+image: mapret/cppimage:v2
+
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - mkdir build && cd build
+    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=make -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang ..
+    - cmake --build .
+  after_script:
+    - cat /builds/mapret/gpupdf/build/vcpkg-bootstrap.log
+    - cat /builds/mapret/gpupdf/build/vcpkg-manifest-install.log
+  artifacts:
+    paths:
+      - build/gpupdf
+    expire_in: 1 week
