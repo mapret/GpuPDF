@@ -31,6 +31,11 @@ void Path::AddBezierCurve(const Vector2& p1, const Vector2& p2, const Vector2& p
   m_subPaths.back().AddBezierCurve(p1, p2, p3);
 }
 
+void Path::AddBezierCurveDuplicateStartPoint(const Vector2& p2, const Vector2& p3)
+{
+  m_subPaths.back().AddBezierCurveDuplicateStartPoint(p2, p3);
+}
+
 int Path::GetApproximateTriangleCount() const
 {
   int approximateTriangleCount{ 0 };

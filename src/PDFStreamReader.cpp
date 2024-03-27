@@ -67,6 +67,18 @@ void PDFStreamReader::Read(const PDFStreamFinder::GraphicsStream& data)
       Vector2 xy1{ PopVector2() };
       m_currentPath.AddBezierCurve(xy1, xy2, xy3);
     }
+    else if (token == "v")
+    {
+      Vector2 xy3{ PopVector2() };
+      Vector2 xy2{ PopVector2() };
+      m_currentPath.AddBezierCurveDuplicateStartPoint(xy2, xy3);
+    }
+    else if (token == "y")
+    {
+      Vector2 xy3{ PopVector2() };
+      Vector2 xy1{ PopVector2() };
+      m_currentPath.AddBezierCurve(xy1, xy3, xy3);
+    }
     else if (token == "re")
     {
       Vector4 rectangle{ PopVector4() };

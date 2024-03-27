@@ -14,7 +14,7 @@ void SubPath::AddBezierCurve(const Vector2& p1, const Vector2& p2, const Vector2
   if (m_points.empty()) // TODO: Why can his happen?
     m_points.push_back(p1);
 
-  const Vector2& p0{ m_points.back() };
+  Vector2 p0{ m_points.back() };
 
   // Start with i=1 to not repeat the point p0
   for (int i{ 1 }; i <= numSteps; i++)
@@ -24,6 +24,12 @@ void SubPath::AddBezierCurve(const Vector2& p1, const Vector2& p2, const Vector2
                std::pow(t, 3.f) * p3 };
     m_points.push_back(p);
   }
+}
+
+void SubPath::AddBezierCurveDuplicateStartPoint(const Vector2& p2, const Vector2& p3)
+{
+  Vector2 p1{ m_points.back() };
+  AddBezierCurve(p1, p2, p3);
 }
 
 void SubPath::ClosePath()

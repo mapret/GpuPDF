@@ -28,6 +28,7 @@ public:
   void CloseSubPath();
   void AddPoint(const Vector2& point);
   void AddBezierCurve(const Vector2& p1, const Vector2& p2, const Vector2& p3);
+  void AddBezierCurveDuplicateStartPoint(const Vector2& p2, const Vector2& p3);
   int GetApproximateTriangleCount() const;
   void GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const;
 };
