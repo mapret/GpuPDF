@@ -6,13 +6,13 @@ stages:
 build:
   stage: build
   script:
-    - mkdir build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=make -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang ..
-    - cmake --build .
-  after_script:
-    - cat /builds/mapret/gpupdf/build/vcpkg-bootstrap.log
-    - cat /builds/mapret/gpupdf/build/vcpkg-manifest-install.log
+    - g++ --version
+    - mkdir build
+    - cmake -G="Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_CXX_COMPILER=g++ -S . -B build
+    - cmake --build build --config Release
+    - cmake --build build --config Debug
   artifacts:
     paths:
-      - build/gpupdf
+      - build/Release/gpupdf
+      - build/Debug/gpupdf
     expire_in: 1 week

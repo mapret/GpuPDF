@@ -29,6 +29,7 @@ include(cmake/Warnings.cmake)
 file(GLOB_RECURSE gpupdf_sources "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/src/*.hpp")
 add_executable(gpupdf ${gpupdf_sources})
 
+target_compile_definitions(gpupdf PRIVATE GLEW_NO_GLU)
 target_include_directories(gpupdf PRIVATE ${CMAKE_SOURCE_DIR}/src)
 #target_include_directories(gpupdf PRIVATE ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
 

@@ -41,7 +41,7 @@ private:
   Name m_name;
   String m_string;
   Array m_array;
-  std::unordered_map<Name, PDFObject> m_dictionary;
+  Dictionary m_dictionary;
   Reference m_reference;
 
   bool m_hasStream{ false };
