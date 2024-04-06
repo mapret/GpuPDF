@@ -6,6 +6,7 @@ endif ()
 #set(VCPKG_MANIFEST_MODE ON)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_SCAN_FOR_MODULES 0)
 
 if (NOT CMAKE_TOOLCHAIN_FILE)
   include(FetchContent)

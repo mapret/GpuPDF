@@ -1,9 +1,8 @@
-image: mapret/cppimage:v2
-
 stages:
   - build
 
-build:
+build-gcc:
+  image: mapret/cppimage:v2
   stage: build
   script:
     - g++ --version
@@ -16,3 +15,13 @@ build:
       - build/Release/gpupdf
       - build/Debug/gpupdf
     expire_in: 1 week
+
+build-clang:
+  image: mapret/linux-clang:v1
+  stage: build
+  script:
+    - clang++ --version
+    - mkdir build
+    - cmake -G="Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_CXX_COMPILER=clang++ -S . -B build
+    - cmake --build build --config Release
+    - cmake --build build --config Debug
