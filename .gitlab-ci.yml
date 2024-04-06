@@ -25,3 +25,23 @@ build-clang:
     - cmake -G="Ninja Multi-Config" -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_CXX_COMPILER=clang++ -S . -B build
     - cmake --build build --config Release
     - cmake --build build --config Debug
+  artifacts:
+    paths:
+      - build/Release/gpupdf
+      - build/Debug/gpupdf
+    expire_in: 1 week
+
+build-msvc:
+  tags:
+    - saas-windows-medium-amd64
+  stage: build
+  script:
+    - mkdir build
+    - cmake -S . -B build
+    - cmake --build build --config Release
+    - cmake --build build --config Debug
+  artifacts:
+    paths:
+      - build/Release/gpupdf.exe
+      - build/Debug/gpupdf.exe
+    expire_in: 1 week
