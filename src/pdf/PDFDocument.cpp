@@ -1,6 +1,14 @@
-#include "PDFDocument.hpp"
+module;
+
+#include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <unordered_map>
+
+export module gpupdf.pdf:Document;
+
+import :Object;
 
 namespace
 {
@@ -225,6 +233,17 @@ PDFObject ReadObject(std::istream& in)
   return PDFObject{};
 }
 } // namespace
+
+export class PDFDocument
+{
+  std::unordered_map<PDFObject::ID, PDFObject> m_objects;
+
+public:
+  bool Load(const std::filesystem::path& path);
+  bool Load(std::ifstream& stream);
+
+  const std::unordered_map<PDFObject::ID, PDFObject>& GetObjects() const;
+};
 
 bool PDFDocument::Load(const std::filesystem::path& path)
 {

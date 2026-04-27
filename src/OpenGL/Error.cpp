@@ -1,7 +1,10 @@
-#include "Error.hpp"
+module;
+
 #include <GL/glew.h>
 #include <format>
 #include <iostream>
+
+export module gpupdf.renderer.opengl:Error;
 
 namespace gl
 {

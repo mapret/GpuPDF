@@ -1,8 +1,8 @@
-#pragma once
+export module gpupdf.math:Triangle;
 
-#include "Vector.hpp"
+import :Vector;
 
-struct Triangle
+export struct Triangle
 {
   struct Vertex
   {

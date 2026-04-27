@@ -5,8 +5,9 @@ if (WIN32)
 endif ()
 #set(VCPKG_MANIFEST_MODE ON)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_SCAN_FOR_MODULES 0)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_SCAN_FOR_MODULES ON)
 
 if (NOT CMAKE_TOOLCHAIN_FILE)
   include(FetchContent)
@@ -39,8 +40,13 @@ project(gpupdf CXX)
 
 include(cmake/Warnings.cmake)
 
-file(GLOB_RECURSE gpupdf_sources "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/src/*.hpp")
-add_executable(gpupdf ${gpupdf_sources})
+file(GLOB_RECURSE gpupdf_cpp_sources "${CMAKE_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE gpupdf_hpp_sources "${CMAKE_SOURCE_DIR}/src/*.hpp")
+set(gpupdf_cpp_main ${CMAKE_SOURCE_DIR}/src/main.cpp)
+list(REMOVE_ITEM gpupdf_cpp_sources ${gpupdf_cpp_main})
+
+add_executable(gpupdf ${gpupdf_cpp_main} ${gpupdf_cpp_sources} ${gpupdf_hpp_sources})
+target_sources(gpupdf PRIVATE FILE_SET CXX_MODULES FILES ${gpupdf_cpp_sources})
 
 target_compile_definitions(gpupdf PRIVATE GLEW_NO_GLU)
 target_include_directories(gpupdf PRIVATE ${CMAKE_SOURCE_DIR}/src)

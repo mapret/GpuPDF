@@ -1,5 +1,39 @@
-#include "Path.hpp"
+module;
+
+#include "math/EnumFlagOperators.hpp"
 #include <CDT.h>
+
+export module gpupdf.pdf:Path;
+
+import :GraphicsState;
+import :SubPath;
+import gpupdf.math;
+
+export enum class PathMode : unsigned
+{
+  None = 0,
+  Fill = (1 << 0),
+  Stroke = (1 << 1),
+};
+DEFINE_ENUM_FLAGS(PathMode, unsigned)
+
+export class Path
+{
+  std::vector<SubPath> m_subPaths;
+  PathMode m_pathMode{ PathMode::None };
+
+public:
+  Path();
+
+  void AddPathMode(PathMode pathMode);
+  void AddNewSubPath();
+  void CloseSubPath();
+  void AddPoint(const Vector2& point);
+  void AddBezierCurve(const Vector2& p1, const Vector2& p2, const Vector2& p3);
+  void AddBezierCurveDuplicateStartPoint(const Vector2& p2, const Vector2& p3);
+  int GetApproximateTriangleCount() const;
+  void GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const;
+};
 
 Path::Path()
 {
@@ -87,9 +121,8 @@ void Path::GetTriangles(const GraphicsState& graphicsState, std::vector<Triangle
     triangulator.insertEdges(tEdges);
     triangulator.eraseOuterTrianglesAndHoles();
 
-    auto convert{ [&](unsigned index) {
-      return Vector2{ triangulator.vertices[index].x, triangulator.vertices[index].y };
-    } };
+    auto convert{ [&](unsigned index)
+    { return Vector2{ triangulator.vertices[index].x, triangulator.vertices[index].y }; } };
     for (const auto& tTriangle : triangulator.triangles)
     {
       const Vector2& p0{ convert(tTriangle.vertices[0]) };

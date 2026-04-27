@@ -1,30 +1,40 @@
-#include "VertexArray.hpp"
-#include "Error.hpp"
+module;
+
 #include <GL/glew.h>
+
+export module gpupdf.renderer.opengl:VertexArray;
+
+import :Error;
 
 namespace gl
 {
-VertexArray::VertexArray()
+class VertexArray
 {
-  glGenVertexArrays(1, &m_name);
+  unsigned m_name;
 
-  CheckError();
-}
+public:
+  VertexArray()
+  {
+    glGenVertexArrays(1, &m_name);
 
-VertexArray::~VertexArray()
-{
-  glDeleteVertexArrays(1, &m_name);
+    CheckError();
+  }
 
-  CheckError();
-}
+  ~VertexArray()
+  {
+    glDeleteVertexArrays(1, &m_name);
 
-void VertexArray::Bind() const
-{
-  glBindVertexArray(m_name);
-}
+    CheckError();
+  }
 
-void VertexArray::Unbind() const
-{
-  glBindVertexArray(0);
-}
+  void Bind() const
+  {
+    glBindVertexArray(m_name);
+  }
+
+  void Unbind() const
+  {
+    glBindVertexArray(0);
+  }
+};
 } // namespace gl

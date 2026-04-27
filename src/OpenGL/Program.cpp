@@ -1,80 +1,90 @@
-#include "Program.hpp"
-#include "Error.hpp"
+module;
+
 #include <GL/glew.h>
 #include <iostream>
-#include <string>
+
+export module gpupdf.renderer.opengl:Program;
+
+import :Error;
+import gpupdf.math;
 
 namespace gl
 {
-Program::Program(const char* vertexShader, const char* fragmentShader)
+class Program
 {
-  int infoLogLength;
+  unsigned m_name;
 
-  GLuint vs{ glCreateShader(GL_VERTEX_SHADER) };
-  glShaderSource(vs, 1, &vertexShader, nullptr);
-  glCompileShader(vs);
-  glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &infoLogLength);
-  if (infoLogLength > 0)
+public:
+  Program(const char* vertexShader, const char* fragmentShader)
   {
-    std::string infoLog(infoLogLength + 1, '\0');
-    glGetShaderInfoLog(vs, infoLogLength, nullptr, infoLog.data());
-    std::cerr << "Vertex shader compile error: " << infoLog;
+    int infoLogLength;
+
+    GLuint vs{ glCreateShader(GL_VERTEX_SHADER) };
+    glShaderSource(vs, 1, &vertexShader, nullptr);
+    glCompileShader(vs);
+    glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &infoLogLength);
+    if (infoLogLength > 0)
+    {
+      std::string infoLog(infoLogLength + 1, '\0');
+      glGetShaderInfoLog(vs, infoLogLength, nullptr, infoLog.data());
+      std::cerr << "Vertex shader compile error: " << infoLog;
+    }
+
+    GLuint fs{ glCreateShader(GL_FRAGMENT_SHADER) };
+    glShaderSource(fs, 1, &fragmentShader, nullptr);
+    glCompileShader(fs);
+    glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &infoLogLength);
+    if (infoLogLength > 0)
+    {
+      std::string infoLog(infoLogLength + 1, '\0');
+      glGetShaderInfoLog(fs, infoLogLength, nullptr, infoLog.data());
+      std::cerr << "Fragment shader compile error: " << infoLog;
+    }
+
+    m_name = glCreateProgram();
+    glAttachShader(m_name, vs);
+    glAttachShader(m_name, fs);
+    glLinkProgram(m_name);
+    glGetProgramiv(m_name, GL_INFO_LOG_LENGTH, &infoLogLength);
+    if (infoLogLength > 0)
+    {
+      std::string infoLog(infoLogLength + 1, '\0');
+      glGetProgramInfoLog(fs, infoLogLength, nullptr, infoLog.data());
+      std::cerr << "Shader link error: " << infoLog;
+    }
+
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+
+    CheckError();
   }
 
-  GLuint fs{ glCreateShader(GL_FRAGMENT_SHADER) };
-  glShaderSource(fs, 1, &fragmentShader, nullptr);
-  glCompileShader(fs);
-  glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &infoLogLength);
-  if (infoLogLength > 0)
+  ~Program()
   {
-    std::string infoLog(infoLogLength + 1, '\0');
-    glGetShaderInfoLog(fs, infoLogLength, nullptr, infoLog.data());
-    std::cerr << "Fragment shader compile error: " << infoLog;
+    glDeleteProgram(m_name);
+
+    CheckError();
   }
 
-  m_name = glCreateProgram();
-  glAttachShader(m_name, vs);
-  glAttachShader(m_name, fs);
-  glLinkProgram(m_name);
-  glGetProgramiv(m_name, GL_INFO_LOG_LENGTH, &infoLogLength);
-  if (infoLogLength > 0)
+  void Use() const
   {
-    std::string infoLog(infoLogLength + 1, '\0');
-    glGetProgramInfoLog(fs, infoLogLength, nullptr, infoLog.data());
-    std::cerr << "Shader link error: " << infoLog;
+    glUseProgram(m_name);
   }
 
-  glDeleteShader(vs);
-  glDeleteShader(fs);
+  int GetUniformLocation(const char* name) const
+  {
+    return glGetUniformLocation(m_name, name);
+  }
 
-  CheckError();
-}
+  void SetUniformValue(int location, const Vector4& vector)
+  {
+    glProgramUniform4fv(m_name, location, 1, vector.Data());
+  }
 
-Program::~Program()
-{
-  glDeleteProgram(m_name);
-
-  CheckError();
-}
-
-void Program::Use() const
-{
-  glUseProgram(m_name);
-}
-
-int Program::GetUniformLocation(const char* name) const
-{
-  return glGetUniformLocation(m_name, name);
-}
+  void SetUniformValue(int location, const Matrix3& matrix)
+  {
+    // Need to transpose because Matrix3 is row-major while OpenGL uses a column-major matrix layout
+    glProgramUniformMatrix3fv(m_name, location, 1, GL_TRUE, matrix.Data());
+  }
+};
 } // namespace gl
-
-void gl::Program::SetUniformValue(int location, const Vector4& vector)
-{
-  glProgramUniform4fv(m_name, location, 1, vector.Data());
-}
-
-void gl::Program::SetUniformValue(int location, const Matrix3& matrix)
-{
-  // Need to transpose because Matrix3 is row-major while OpenGL uses a column-major matrix layout
-  glProgramUniformMatrix3fv(m_name, location, 1, GL_TRUE, matrix.Data());
-}

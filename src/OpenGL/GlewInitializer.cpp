@@ -1,14 +1,21 @@
-#include "GlewInitializer.hpp"
+module;
+
 #include <GL/glew.h>
 #include <iostream>
 
+export module gpupdf.renderer.opengl:GlewInitializer;
+
 namespace gl
 {
-GlewInitializer::GlewInitializer()
+export class GlewInitializer
 {
-  if (glewInit() != GLEW_OK)
+public:
+  GlewInitializer()
   {
-    std::cerr << "Failed to initialize GLEW\n";
+    if (glewInit() != GLEW_OK)
+    {
+      std::cerr << "Failed to initialize GLEW\n";
+    }
   }
-}
+};
 } // namespace gl

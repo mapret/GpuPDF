@@ -1,12 +1,31 @@
-#include "Window.hpp"
-#include "OpenGL/Renderer.hpp"
-#include "PDFStreamFinder.hpp"
-#include "PDFStreamReader.hpp"
+module;
+
 #include <GLFW/glfw3.h>
+#include <filesystem>
 #include <iostream>
 #include <thread>
 
-using namespace MouseEvents;
+export module gpupdf.window;
+
+import gpupdf.input;
+import gpupdf.math;
+import gpupdf.renderer.opengl;
+import gpupdf.pdf;
+
+export class Window
+{
+  InputHandler m_inputHandler;
+  static Window* m_self;
+
+  static void CursorPositionCallback_impl(GLFWwindow* window, double xPosition, double yPosition);
+  static void MouseButtonCallback_impl(GLFWwindow* window, int button, int action, int mods);
+  static void ScrollCallback_impl(GLFWwindow* window, double xOffset, double yOffset);
+
+public:
+  Window();
+  ~Window();
+  void Run(const std::filesystem::path& sourceFile);
+};
 
 Window* Window::m_self{ nullptr };
 
@@ -15,6 +34,13 @@ Window::Window()
   if (m_self != nullptr)
     std::cerr << "Multiple windows are not supported\n";
   m_self = this;
+}
+
+Window::~Window()
+{
+  if (!m_self)
+    std::cerr << "Window context not found\n";
+  m_self = nullptr;
 }
 
 void Window::Run(const std::filesystem::path& sourceFile)
@@ -29,7 +55,7 @@ void Window::Run(const std::filesystem::path& sourceFile)
 
   Vector2 dpi;
   glfwGetWindowContentScale(window, &dpi.x, &dpi.y);
-  auto rendererPtr{ std::make_unique<gl::Renderer>(*this, dpi) };
+  auto rendererPtr{ std::make_unique<gl::Renderer>(m_inputHandler, dpi) };
   auto& renderer{ *rendererPtr };
 
   std::thread loadThread{ [&]()
@@ -72,67 +98,49 @@ void Window::Run(const std::filesystem::path& sourceFile)
   loadThread.join();
 }
 
-void Window::SetMouseMoveCallback(const MouseMoveCallback& callback)
-{
-  m_mouseMoveCallback = callback;
-}
-
-void Window::SetMouseButtonCallback(const MouseButtonCallback& callback)
-{
-  m_mouseButtonCallback = callback;
-}
-
-void Window::SetMouseWheelHandler(const MouseWheelCallback& callback)
-{
-  m_mouseWheelCallback = callback;
-}
-
 void Window::CursorPositionCallback_impl(GLFWwindow* /*window*/, double xPosition, double yPosition)
 {
-  m_self->m_currentMousePosition = Vector2i{ static_cast<int>(xPosition), static_cast<int>(yPosition) };
-  if (m_self->m_mouseMoveCallback)
-    m_self->m_mouseMoveCallback(m_self->m_currentMousePosition);
+  m_self->m_inputHandler.MouseMoveEvent(Vector2i{ static_cast<int>(xPosition), static_cast<int>(yPosition) });
 }
 
 void Window::MouseButtonCallback_impl(GLFWwindow* /*window*/, int button, int action, int /*mods*/)
 {
-  if (m_self->m_mouseButtonCallback)
+  using MouseEvents::MouseAction;
+  using MouseEvents::MouseButton;
+
+  MouseButton mouseButton;
+  switch (button)
   {
-    MouseButton mouseButton;
-    switch (button)
-    {
-      case GLFW_MOUSE_BUTTON_LEFT:
-        mouseButton = MouseButton::Left;
-        break;
-      case GLFW_MOUSE_BUTTON_MIDDLE:
-        mouseButton = MouseButton::Middle;
-        break;
-      case GLFW_MOUSE_BUTTON_RIGHT:
-        mouseButton = MouseButton::Right;
-        break;
-      default:
-        return;
-    }
-
-    MouseAction mouseAction;
-    switch (action)
-    {
-      case GLFW_PRESS:
-        mouseAction = MouseAction::Press;
-        break;
-      case GLFW_RELEASE:
-        mouseAction = MouseAction::Release;
-        break;
-      default:
-        return;
-    }
-
-    m_self->m_mouseButtonCallback(mouseButton, mouseAction, m_self->m_currentMousePosition);
+    case GLFW_MOUSE_BUTTON_LEFT:
+      mouseButton = MouseButton::Left;
+      break;
+    case GLFW_MOUSE_BUTTON_MIDDLE:
+      mouseButton = MouseButton::Middle;
+      break;
+    case GLFW_MOUSE_BUTTON_RIGHT:
+      mouseButton = MouseButton::Right;
+      break;
+    default:
+      return;
   }
+
+  MouseAction mouseAction;
+  switch (action)
+  {
+    case GLFW_PRESS:
+      mouseAction = MouseAction::Press;
+      break;
+    case GLFW_RELEASE:
+      mouseAction = MouseAction::Release;
+      break;
+    default:
+      return;
+  }
+
+  m_self->m_inputHandler.MouseButtonEvent(mouseButton, mouseAction);
 }
 
 void Window::ScrollCallback_impl(GLFWwindow* /*window*/, double /*xOffset*/, double yOffset)
 {
-  if (m_self->m_mouseWheelCallback)
-    m_self->m_mouseWheelCallback(static_cast<int>(yOffset), m_self->m_currentMousePosition);
+  m_self->m_inputHandler.MouseWheelEvent(static_cast<int>(yOffset));
 }

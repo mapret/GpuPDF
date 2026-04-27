@@ -1,35 +1,46 @@
-#include "Buffer.hpp"
-#include "Error.hpp"
+module;
+
 #include <GL/glew.h>
+#include <cstddef>
+
+export module gpupdf.renderer.opengl:Buffer;
+
+import :Error;
 
 namespace gl
 {
-Buffer::Buffer()
+export class Buffer
 {
-  glGenBuffers(1, &m_name);
+  unsigned m_name;
 
-  CheckError();
-}
+public:
+  Buffer()
+  {
+    glGenBuffers(1, &m_name);
 
-Buffer::~Buffer()
-{
-  glDeleteBuffers(1, &m_name);
+    CheckError();
+  }
 
-  CheckError();
-}
+  ~Buffer()
+  {
+    glDeleteBuffers(1, &m_name);
 
-void Buffer::Bind() const
-{
-  glBindBuffer(GL_ARRAY_BUFFER, m_name);
-}
+    CheckError();
+  }
 
-void Buffer::Unbind() const
-{
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
+  void Bind() const
+  {
+    glBindBuffer(GL_ARRAY_BUFFER, m_name);
+  }
 
-void Buffer::SetData(std::ptrdiff_t dataLength, const void* data)
-{
-  glBufferData(GL_ARRAY_BUFFER, dataLength, data, GL_STATIC_DRAW);
-}
+  void Unbind() const
+  {
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+  }
+
+  void SetData(std::ptrdiff_t dataLength, const void* data)
+  {
+    glBufferData(GL_ARRAY_BUFFER, dataLength, data, GL_STATIC_DRAW);
+  }
+};
 } // namespace gl

@@ -1,6 +1,25 @@
-#include "PDFStreamFinder.hpp"
-#include "PDFDocument.hpp"
-#include "math/Rectangle.hpp"
+module;
+
+#include <filesystem>
+#include <string>
+#include <vector>
+
+export module gpupdf.pdf:StreamFinder;
+
+import :Document;
+import gpupdf.math;
+
+export class PDFStreamFinder
+{
+public:
+  struct GraphicsStream
+  {
+    std::string m_data;
+    Rectangle m_drawArea;
+  };
+
+  std::vector<GraphicsStream> GetGraphicsStreams(const std::filesystem::path& sourceFile) const;
+};
 
 std::vector<PDFStreamFinder::GraphicsStream> PDFStreamFinder::GetGraphicsStreams(
   const std::filesystem::path& sourceFile) const

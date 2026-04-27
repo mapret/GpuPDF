@@ -1,13 +1,71 @@
-#include "Renderer.hpp"
-#include "OpenGL/Buffer.hpp"
-#include "OpenGL/Error.hpp"
-#include "Window.hpp"
+module;
+
 #include <GL/glew.h>
 #include <algorithm>
+#include <filesystem>
 #include <iostream>
+#include <vector>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
+
+export module gpupdf.renderer.opengl:Renderer;
+
+import :Buffer;
+import :Error;
+import :GlewInitializer;
+import :Program;
+import :VertexArray;
+import gpupdf.input;
+
+namespace gl
+{
+export class Renderer
+{
+  bool m_ready{ false };
+  bool m_initialDraw{ true };
+
+  Vector2 m_dpi;
+  Vector2i m_windowSize{ 1, 1 };
+  bool m_windowSizeChanged{ true };
+
+  Rectangle m_drawArea{ { 0.f, 0.f }, { 100.f, 100.f } };
+  bool m_drawAreaChanged{ true };
+
+  int m_zoomLevel{ 0 };
+  Vector2 m_pan{ 0.f };
+  constexpr static float ZOOM_BASE{ 1.2f };
+  constexpr static int MIN_ZOOM_LEVEL{ -8 };
+  constexpr static int MAX_ZOOM_LEVEL{ 16 };
+
+  bool m_leftButtonPressed{ false };
+  Vector2 m_lastMousePosition;
+
+  std::vector<Triangle> m_triangles;
+
+  unsigned m_fbo{ 0 };
+  int m_maxSampleCount{ -1 };
+  GlewInitializer m_glewInitializer;
+  VertexArray m_vao;
+  Program m_program;
+
+  Vector2 GetNormalizedMousePosition(const Vector2i& mousePosition);
+  Matrix3 GetViewportTransform() const;
+  void RecreateFramebuffer();
+
+public:
+  Renderer(InputHandler& input, const Vector2& dpi);
+  ~Renderer();
+  void SetTriangleBuffer(std::vector<Triangle>&& triangles);
+  void AddTriangles(const std::vector<Triangle>& triangles);
+  void Finish();
+  void SetWindowSize(const Vector2i& windowSize);
+  void SetDrawArea(const Rectangle& drawArea);
+  void Draw();
+
+  void SaveScreenshotAsPNG(const std::filesystem::path& outputPath);
+};
+} // namespace gl
 
 namespace
 {
@@ -34,7 +92,7 @@ void main() {
 
 namespace gl
 {
-Renderer::Renderer(Window& window, const Vector2& dpi)
+Renderer::Renderer(InputHandler& input, const Vector2& dpi)
   : m_dpi(dpi)
   , m_program(scalingVertexShader, passthroughFragmentShader)
 {
@@ -43,7 +101,7 @@ Renderer::Renderer(Window& window, const Vector2& dpi)
   glEnable(GL_MULTISAMPLE);
   glDisable(GL_DEPTH_TEST);
 
-  window.SetMouseMoveCallback([this](const Vector2i& position)
+  input.SetMouseMoveCallback([this](const Vector2i& position)
   {
     if (m_leftButtonPressed)
     {
@@ -55,7 +113,7 @@ Renderer::Renderer(Window& window, const Vector2& dpi)
       m_drawAreaChanged = true;
     }
   });
-  window.SetMouseButtonCallback(
+  input.SetMouseButtonCallback(
     [this](MouseEvents::MouseButton button, MouseEvents::MouseAction action, const Vector2i& position)
   {
     if (button == MouseEvents::MouseButton::Left)
@@ -71,7 +129,7 @@ Renderer::Renderer(Window& window, const Vector2& dpi)
       }
     }
   });
-  window.SetMouseWheelHandler([this](int offset, const Vector2i& mousePosition)
+  input.SetMouseWheelHandler([this](int offset, const Vector2i& mousePosition)
   {
     int scrollDirection{ offset > 0 ? 1 : -1 };
     Vector2 normalizedMousePosition{ GetNormalizedMousePosition(mousePosition) - 0.5f };

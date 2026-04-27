@@ -1,4 +1,4 @@
-#include "Window.hpp"
+import gpupdf.window;
 
 int main(int argc, char** argv)
 {

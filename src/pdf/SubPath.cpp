@@ -1,5 +1,36 @@
-#include "SubPath.hpp"
-#include "math/Numbers.hpp"
+module;
+
+#include <cmath>
+#include <vector>
+
+export module gpupdf.pdf:SubPath;
+
+import :GraphicsState;
+import gpupdf.math;
+
+export class SubPath
+{
+  std::vector<Vector2> m_points;
+  bool m_closed{ false };
+
+  void DrawPie(const Vector2& center,
+               float radius,
+               float beginAngle,
+               float angleSize,
+               const Vector3& color,
+               std::vector<Triangle>& out) const;
+
+public:
+  void Stroke(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const;
+  void AddPoint(const Vector2& point);
+  void AddBezierCurve(const Vector2& p1, const Vector2& p2, const Vector2& p3);
+  void AddBezierCurveDuplicateStartPoint(const Vector2& p2, const Vector2& p3);
+  void ClosePath();
+
+  bool IsEmpty() const;
+  bool IsClosed() const;
+  const std::vector<Vector2>& GetPoints() const;
+};
 
 void SubPath::AddPoint(const Vector2& point)
 {

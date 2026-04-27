@@ -1,7 +1,9 @@
-#pragma once
+module;
 
 #include <array>
 #include <cmath>
+
+export module gpupdf.math:Matrix;
 
 namespace detail
 {
@@ -57,12 +59,19 @@ protected:
   {
   }
 
-  T& at2(int i) { return m_data[i]; }
-  T at2(int i) const { return m_data[i]; }
+  T& at2(int i)
+  {
+    return m_data[i];
+  }
+
+  T at2(int i) const
+  {
+    return m_data[i];
+  }
 };
 } // namespace detail
 
-template<typename T, int ROWS, int COLS>
+export template<typename T, int ROWS, int COLS>
 class Matrix final
   : public std::conditional_t<
       4 < ROWS || 1 < COLS,
@@ -219,10 +228,25 @@ public:
     return *this;
   }
 
-  T LengthSquared() const { return Dot(*this); }
-  T Length() const { return std::sqrt(LengthSquared()); }
-  Matrix Normalized() const { return *this / Length(); }
-  void Normalize() { *this /= Length(); }
+  T LengthSquared() const
+  {
+    return Dot(*this);
+  }
+
+  T Length() const
+  {
+    return std::sqrt(LengthSquared());
+  }
+
+  Matrix Normalized() const
+  {
+    return *this / Length();
+  }
+
+  void Normalize()
+  {
+    *this /= Length();
+  }
 
   // clang-format off
   template<bool _unused = true, typename = std::enable_if_t<ROWS == 3 && COLS == 3 && _unused>>
@@ -269,5 +293,5 @@ public:
   // clang-format on
 };
 
-using Matrix3 = Matrix<float, 3, 3>;
-using Matrix4 = Matrix<float, 4, 4>;
+export using Matrix3 = Matrix<float, 3, 3>;
+export using Matrix4 = Matrix<float, 4, 4>;
