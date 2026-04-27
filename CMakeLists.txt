@@ -13,7 +13,7 @@ if (NOT CMAKE_TOOLCHAIN_FILE)
   FetchContent_Declare(
       vcpkg
       GIT_REPOSITORY https://github.com/microsoft/vcpkg/
-      GIT_TAG 2024.02.14
+      GIT_TAG 2026.03.18
       GIT_SHALLOW TRUE
       GIT_PROGRESS TRUE
       USE_TERMINAL_DOWNLOAD TRUE
