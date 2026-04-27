@@ -2,7 +2,7 @@ stages:
   - build
 
 build-gcc:
-  image: mapret/cppimage:v2
+  image: mapret/cppimage:v3
   stage: build
   script:
     - g++ --version
@@ -17,7 +17,7 @@ build-gcc:
     expire_in: 1 week
 
 build-clang:
-  image: mapret/linux-clang:v1
+  image: mapret/linux-clang:v2
   stage: build
   script:
     - clang++ --version

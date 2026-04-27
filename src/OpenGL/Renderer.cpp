@@ -3,6 +3,7 @@
 #include "OpenGL/Error.hpp"
 #include "Window.hpp"
 #include <GL/glew.h>
+#include <algorithm>
 #include <iostream>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
