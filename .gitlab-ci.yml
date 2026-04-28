@@ -2,7 +2,7 @@ stages:
   - build
 
 build-gcc:
-  image: mapret/cppimage:v3
+  image: mapret/cppimage:v4
   stage: build
   script:
     - g++ --version
@@ -17,7 +17,7 @@ build-gcc:
     expire_in: 1 week
 
 build-clang:
-  image: mapret/linux-clang:v2
+  image: mapret/linux-clang:v3
   stage: build
   script:
     - clang++ --version
@@ -35,6 +35,8 @@ build-msvc:
   tags:
     - saas-windows-medium-amd64
   stage: build
+  before_script:
+    - choco upgrade -y cmake  # Need newer cmake for c++ modules (3.27.8 provided in image)
   script:
     - mkdir build
     - cmake -S . -B build

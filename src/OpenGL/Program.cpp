@@ -3,7 +3,7 @@ module;
 #include <GL/glew.h>
 #include <iostream>
 
-export module gpupdf.renderer.opengl:Program;
+module gpupdf.renderer.opengl:Program;
 
 import :Error;
 import gpupdf.math;

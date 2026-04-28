@@ -3,13 +3,13 @@ module;
 #include <GL/glew.h>
 #include <cstddef>
 
-export module gpupdf.renderer.opengl:Buffer;
+module gpupdf.renderer.opengl:Buffer;
 
 import :Error;
 
 namespace gl
 {
-export class Buffer
+class Buffer
 {
   unsigned m_name;
 

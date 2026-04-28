@@ -13,6 +13,10 @@ export class InputHandler
   MouseEvents::MouseMoveCallback m_mouseMoveCallback;
 
 public:
+  // Explicitly defined constructor and destructor required by MinGW
+  InputHandler() {}
+  ~InputHandler() {}
+
   void MouseMoveEvent(const Vector2i& mousePosition)
   {
     m_currentMousePosition = mousePosition;

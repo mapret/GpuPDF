@@ -17,6 +17,7 @@ import :GlewInitializer;
 import :Program;
 import :VertexArray;
 import gpupdf.input;
+import gpupdf.math;
 
 namespace gl
 {

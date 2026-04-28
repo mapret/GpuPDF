@@ -1,7 +1,10 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.28)
 
-if (WIN32)
+option(STATIC_BUILD "Build a static executable" ON)
+
+if (WIN32 AND STATIC_BUILD)
   set(VCPKG_TARGET_TRIPLET x64-windows-static)
+  message(STATUS "Building a static executable")
 endif ()
 #set(VCPKG_MANIFEST_MODE ON)
 

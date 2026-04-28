@@ -1,9 +1,16 @@
 module;
 
+// TODO: Remove this once https://github.com/uxlfoundation/oneTBB/commit/914f8cd7ae0219c2630b9077d9c8fb837a355082
+//  is in the next vcpkg version
+#ifndef __GNUC__
 #include <execution>
+#endif
+
+#include <algorithm>
 #include <ranges>
 #include <stack>
 #include <string>
+#include <vector>
 
 export module gpupdf.pdf:StreamReader;
 
@@ -210,7 +217,14 @@ std::vector<Triangle> PDFStreamReader::CollectTriangles() const
   std::vector<std::vector<Triangle>> perPathTriangles(m_paths.size());
 
   std::ranges::iota_view pathIndexView{ 0, static_cast<int>(m_paths.size()) };
+
+  // TODO: Remove this once https://github.com/uxlfoundation/oneTBB/commit/914f8cd7ae0219c2630b9077d9c8fb837a355082
+  //  is in the next vcpkg version
+#ifndef __GNUC__
   std::for_each(std::execution::par,
+#else
+  std::for_each(
+#endif
                 pathIndexView.begin(),
                 pathIndexView.end(),
                 [&](int pathIndex)

@@ -7,6 +7,7 @@ module;
 export module gpupdf.pdf:StreamFinder;
 
 import :Document;
+import :Object;
 import gpupdf.math;
 
 export class PDFStreamFinder

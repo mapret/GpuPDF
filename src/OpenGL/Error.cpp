@@ -4,7 +4,7 @@ module;
 #include <format>
 #include <iostream>
 
-export module gpupdf.renderer.opengl:Error;
+module gpupdf.renderer.opengl:Error;
 
 namespace gl
 {

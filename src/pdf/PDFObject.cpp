@@ -1,6 +1,7 @@
 module;
 
 #include <array>
+#include <cstring>
 #include <ostream>
 #include <unordered_map>
 #include <vector>

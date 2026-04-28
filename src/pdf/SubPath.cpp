@@ -21,6 +21,9 @@ export class SubPath
                std::vector<Triangle>& out) const;
 
 public:
+  // Explicitly defined destructor required by MinGW
+  ~SubPath() {}
+
   void Stroke(const GraphicsState& graphicsState, std::vector<Triangle>& trianglesOut) const;
   void AddPoint(const Vector2& point);
   void AddBezierCurve(const Vector2& p1, const Vector2& p2, const Vector2& p3);

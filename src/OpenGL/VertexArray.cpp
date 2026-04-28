@@ -2,7 +2,7 @@ module;
 
 #include <GL/glew.h>
 
-export module gpupdf.renderer.opengl:VertexArray;
+module gpupdf.renderer.opengl:VertexArray;
 
 import :Error;
 

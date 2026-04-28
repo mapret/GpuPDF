@@ -18,6 +18,9 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
       -Wshadow-all
       -pedantic
   )
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "20.1.0")
+    add_compile_options(-Wno-import-implementation-partition-unit-in-interface-unit)
+  endif()
 else ()
   message(AUTHOR_WARNING "Unrecognized compiler \"${CMAKE_CXX_COMPILER_ID}\", consider adding it in Warnings.cmake")
 endif ()

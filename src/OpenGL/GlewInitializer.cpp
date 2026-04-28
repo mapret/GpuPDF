@@ -3,11 +3,11 @@ module;
 #include <GL/glew.h>
 #include <iostream>
 
-export module gpupdf.renderer.opengl:GlewInitializer;
+module gpupdf.renderer.opengl:GlewInitializer;
 
 namespace gl
 {
-export class GlewInitializer
+class GlewInitializer
 {
 public:
   GlewInitializer()
